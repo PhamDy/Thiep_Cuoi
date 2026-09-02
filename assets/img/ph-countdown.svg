@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200" width="800" height="1200">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9e2cf"/><stop offset="1" stop-color="#3f5545"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1200" fill="url(#g)"/>
+  <g fill="#ffffff" opacity="0.42" transform="translate(400,720)">
+    <!-- chú rể -->
+    <circle cx="-70" cy="-70" r="52"/>
+    <path d="M-160,120 C-160,10 -20,10 -20,120 Z"/>
+    <!-- cô dâu + voan -->
+    <circle cx="70" cy="-60" r="48"/>
+    <path d="M20,120 C20,20 150,20 150,120 Z"/>
+    <path d="M118,-95 C170,-70 165,60 150,120 L120,120 C132,40 120,-40 100,-80 Z" opacity="0.6"/>
+  </g>
+  <g fill="#ffffff" opacity="0.9" transform="translate(400,864)">
+    <path d="M0,-6 C-8,-20 -30,-8 0,16 C30,-8 8,-20 0,-6 Z"/>
+  </g>
+  <text x="400" y="1008" font-family="Georgia, serif" font-size="26" fill="#ffffff" text-anchor="middle" opacity="0.95">Ảnh cưới</text>
+  <text x="400" y="1068" font-family="sans-serif" font-size="15" fill="#ffffff" text-anchor="middle" opacity="0.75">REPLACE: countdown</text>
+</svg>

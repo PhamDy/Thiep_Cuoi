@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dfe6d5"/><stop offset="1" stop-color="#93a98c"/></linearGradient></defs>
+  <rect width="600" height="800" fill="url(#g1)"/>
+  <text x="300" y="380" font-family="Georgia, serif" font-size="72" fill="#fff" text-anchor="middle" opacity="0.9">&#9829;</text>
+  <text x="300" y="450" font-family="Georgia, serif" font-size="32" fill="#3c4f40" text-anchor="middle">Ảnh cưới 1</text>
+  <text x="300" y="490" font-family="sans-serif" font-size="18" fill="#3c4f40" text-anchor="middle" opacity="0.7">REPLACE: assets/img/photo-1</text>
+</svg>

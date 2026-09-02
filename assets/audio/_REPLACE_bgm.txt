@@ -1,0 +1,6 @@
+REPLACE: Bỏ file nhạc nền vào đây, đặt tên `bgm.mp3`
+(hoặc đổi đường dẫn `music` trong js/config.js cho khớp tên file của bạn).
+
+- Định dạng khuyến nghị: .mp3, dung lượng nhẹ (< 5MB) để tải nhanh trên mobile.
+- Không có file nhạc thì trang vẫn chạy bình thường, chỉ là nút nhạc không phát gì.
+- Lưu ý bản quyền: dùng nhạc bạn có quyền sử dụng (tự thu, mua license, hoặc nhạc free-license).

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thiệp cưới</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Great+Vibes&family=Montserrat:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="pre-open">
+  <!-- REPLACE: file nhạc nền trỏ từ js/config.js (music) -->
+  <audio id="bgm" loop preload="auto"></audio>
+
+  <!-- ĐĨA NHẠC (fixed toàn viewport) -->
+  <button id="musicToggle" class="music-disc" aria-label="Bật/tắt nhạc"></button>
+
+  <!-- MÀN HÌNH NGOÀI (INTRO) -->
+  <div class="intro" id="intro">
+    <!-- REPLACE: ảnh nền intro trỏ từ config.photos.intro -->
+    <div class="intro-photo" id="introPhoto"></div>
+    <div class="intro-scrim"></div>
+    <div class="intro-petals" id="introPetals" aria-hidden="true"></div>
+    <span class="orn orn-tl" aria-hidden="true"></span>
+    <span class="orn orn-br" aria-hidden="true"></span>
+
+    <div class="intro-inner">
+      <div class="envelope" id="envelope" aria-hidden="true">
+        <div class="env-back"></div>
+        <div class="env-letter"></div>
+        <div class="env-body"></div>
+        <div class="env-flap"></div>
+        <div class="env-heart">♥</div>
+      </div>
+      <h1 class="intro-names">
+        <span data-bind="groom.shortName">Quang</span>
+        <em>&amp;</em>
+        <span data-bind="bride.shortName">Vân</span>
+      </h1>
+      <div class="intro-div">✦</div>
+      <p class="intro-date" id="introDate">20 · 12 · 2026</p>
+      <p class="intro-sub">Trân Trọng Kính Mời</p>
+      <button class="intro-open" id="introOpen">◆&nbsp;&nbsp;MỞ THIỆP&nbsp;&nbsp;◆</button>
+    </div>
+
+    <!-- rèm mở -->
+    <div class="curtain curtain-l"></div>
+    <div class="curtain curtain-r"></div>
+  </div>
+
+  <div class="petals" id="petals" aria-hidden="true"></div>
+
+  <div class="card" id="card">
+    <!-- 1. COVER -->
+    <section class="sec cover" id="cover">
+      <!-- REPLACE: ảnh cover trỏ từ config.photos.cover -->
+      <div class="cover-photo" id="coverPhoto"></div>
+      <div class="cover-scrim"></div>
+      <div class="cover-inborder"></div>
+      <p class="cover-side"><span data-bind="groom.shortName">Dy</span><i aria-hidden="true">♥</i><span data-bind="bride.shortName">Trang</span></p>
+      <div class="cover-info-block" id="coverInfoBlock"></div>
+    </section>
+
+    <!-- 2. LỜI MỜI -->
+    <section class="sec invite reveal">
+      <p class="loc" data-bind="location">...</p>
+      <div class="families">
+        <div class="fam-row">
+          <p class="fam-label">NHÀ TRAI</p>
+          <p data-bind="groom.father">Ông ...</p>
+          <p data-bind="groom.mother">Bà ...</p>
+          <p class="fam-addr" data-bind="groom.address">...</p>
+        </div>
+        <div class="fam-row">
+          <p class="fam-label">NHÀ GÁI</p>
+          <p data-bind="bride.father">Ông ...</p>
+          <p data-bind="bride.mother">Bà ...</p>
+          <p class="fam-addr" data-bind="bride.address">...</p>
+        </div>
+        <p class="cover-nch"><span>Nhà</span><span>Có</span><span>Hỷ</span></p>
+      </div>
+      <p class="invite-lead"><span class="hb">♥</span> <span data-bind="invitationText">TRÂN TRỌNG BÁO TIN LỄ THÀNH HÔN CỦA</span></p>
+      <h2 class="couple-names">
+        <span data-bind="groom.name">Nguyễn Vinh Quang</span>
+        <span class="amp">&amp;</span>
+        <span data-bind="bride.name">Nguyễn Thị Thúy Vân</span>
+      </h2>
+      <!-- REPLACE: ảnh section lời mời trỏ từ config.photos.invite -->
+      <div class="framed-photo" id="invitePhoto"></div>
+    </section>
+
+    <!-- 3. KHỐI TIỆC -->
+    <section class="sec parties reveal">
+      <h2 class="serif-title parties-head">THƯ MỜI THAM DỰ</h2>
+      <div class="party-block" id="partyGroom"></div>
+      <div class="party-block" id="partyBride"></div>
+    </section>
+
+    <!-- 4. NGHI LỄ -->
+    <section class="sec ceremony reveal">
+      <div class="cere" id="cereVuquy"></div>
+      <div class="cere-road" aria-hidden="true">
+        <div class="cr-home cr-left">🏠<span>Nhà Gái</span></div>
+        <svg class="cr-svg" viewBox="0 0 240 80" preserveAspectRatio="none">
+          <path d="M10,64 C70,64 70,20 120,20 C170,20 170,64 230,64" fill="none" stroke="#e6b8c4" stroke-width="3" stroke-dasharray="7 6"/>
+        </svg>
+        <div class="cr-car">🚗</div>
+        <div class="cr-home cr-right">🏠<span>Nhà Trai</span></div>
+      </div>
+      <div class="cere" id="cereThanhhon"></div>
+    </section>
+
+    <!-- 5. LỊCH -->
+    <section class="sec calendar reveal">
+      <p class="calendar-month" id="calMonth">Tháng 12, 2026</p>
+      <div class="calendar-card">
+        <div class="calendar-weekdays">
+          <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+        </div>
+        <div class="calendar-grid" id="calGrid"></div>
+      </div>
+    </section>
+
+    <!-- 6. ĐẾM NGƯỢC -->
+    <section class="sec countdown reveal" id="countdownSec">
+      <!-- REPLACE: ảnh nền đếm ngược trỏ từ config.photos.countdown -->
+      <div class="cd-photo" id="countdownPhoto"></div>
+      <div class="cd-scrim"></div>
+      <div class="cd-inner">
+        <h2 class="serif-title">INVITATION</h2>
+        <p class="cd-names"><span data-bind="groom.name">Phạm Đắc Dy</span> - <span data-bind="bride.name">Trần Huyền Trang</span></p>
+        <p class="cd-para" data-bind="invitationParagraph">...</p>
+        <div class="countdown-box" id="countdown">
+          <div class="cd-unit"><span id="cdDays">0</span><label>Ngày</label></div>
+          <div class="cd-unit"><span id="cdHours">0</span><label>Giờ</label></div>
+          <div class="cd-unit"><span id="cdMins">0</span><label>Phút</label></div>
+          <div class="cd-unit"><span id="cdSecs">0</span><label>Giây</label></div>
+        </div>
+        <p class="countdown-done" id="countdownDone" hidden>Chúng mình đã về chung nhà ♥</p>
+      </div>
+    </section>
+
+    <!-- 6b. QUOTE Love / You -->
+    <section class="sec quote-sec reveal">
+      <div class="quote-photos">
+        <!-- REPLACE: ảnh "Love" trỏ từ config.photos.love -->
+        <div class="qp qp-love" id="lovePhoto"><span class="qp-word">Love</span></div>
+        <!-- REPLACE: ảnh "You" trỏ từ config.photos.you -->
+        <div class="qp qp-you" id="youPhoto"><span class="qp-word">You</span></div>
+      </div>
+      <p class="quote-text" data-bind="quote">...</p>
+    </section>
+
+    <!-- 7. RSVP -->
+    <section class="sec rsvp reveal">
+      <h2 class="script-title">Xác nhận tham dự</h2>
+      <form id="rsvpForm" class="rsvp-form">
+        <label class="rsvp-lb">Họ và tên</label>
+        <input type="text" name="guestname" placeholder="Nhập tên của bạn" required>
+        <p class="rsvp-q">Bạn sẽ tham dự chứ?</p>
+        <div class="rsvp-col">
+          <label><input type="radio" name="attend" value="yes" checked> Có, tôi sẽ tham dự</label>
+          <label><input type="radio" name="attend" value="no"> Tôi bận, rất tiếc không thể tham dự</label>
+        </div>
+        <p class="rsvp-q">Số lượng người tham dự</p>
+        <select name="guests">
+          <option value="1">1 người</option><option value="2">2 người</option>
+          <option value="3">3 người</option><option value="4">4 người</option>
+          <option value="5">5 người</option><option value="6">6 người</option>
+          <option value="7">7 người</option><option value="8">8 người</option>
+          <option value="9">9 người</option><option value="10">10 người</option>
+        </select>
+        <p class="rsvp-q">Bạn là khách mời của ai?</p>
+        <div class="rsvp-col">
+          <label><input type="radio" name="side" value="groom" checked> Nhà trai</label>
+          <label><input type="radio" name="side" value="bride"> Nhà gái</label>
+        </div>
+        <button type="submit" class="btn-maroon">Gửi xác nhận</button>
+        <p class="rsvp-thanks" id="rsvpThanks" hidden>Cảm ơn bạn đã xác nhận ♥</p>
+      </form>
+    </section>
+
+    <!-- 8. MỪNG CƯỚI -->
+    <section class="sec gift reveal">
+      <div class="gift-box" id="giftOpen" role="button" tabindex="0">
+        <div class="gift-icon" aria-hidden="true" style="background-image: url('https://assets.cinelove.me/resources/flowchartIcons/bc7ro23uqhun7ge954163l.png');"></div>
+        <p class="gift-caption">Gửi quà mừng tới Cô Dâu &amp; Chú Rể</p>
+      </div>
+    </section>
+
+    <!-- 9. ALBUM -->
+    <section class="sec album reveal">
+      <h2 class="album-title"><span>ALBUM</span><em>of</em><span>LOVE</span></h2>
+      <div class="album-panel">
+        <div class="carousel">
+          <button class="car-btn car-prev" id="carPrev" aria-label="Trước">&#10094;</button>
+          <div class="car-stage"><img id="carImg" alt="Ảnh cưới"></div>
+          <button class="car-btn car-next" id="carNext" aria-label="Sau">&#10095;</button>
+          <button class="car-full" id="carFull" aria-label="Phóng to">⛶</button>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+    </section>
+
+    <!-- 10. FOOTER -->
+    <footer class="sec footer">
+      <!-- REPLACE: ảnh footer trỏ từ config.photos.footer -->
+      <div class="footer-photo" id="footerPhoto"></div>
+      <div class="footer-scrim"></div>
+      <div class="footer-overlay">
+        <p class="footer-names"><span data-bind="groom.shortName">Quang</span> ♥ <span data-bind="bride.shortName">Vân</span></p>
+        <p class="footer-credit" data-bind="footerCredit">...</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- SỔ LƯU BÚT NỔI: chat bubble + thanh dưới -->
+  <div class="gb-stream" id="gbStream" aria-live="polite"></div>
+  <!-- REPLACE: ảnh đôi tròn nút nổi trỏ từ config.photos.avatar -->
+  <button class="fab-avatar" id="fabAvatar" aria-label="Về đầu trang"></button>
+  <form class="gb-bar" id="wishForm">
+    <input type="text" name="text" placeholder="Gửi lời chúc..." required>
+    <button type="submit" class="gb-btn gb-send">Gửi</button>
+    <button type="button" class="gb-btn gb-shoot" id="shootHeart">Bắn tim</button>
+    <span class="gb-count"><b id="heartCount">0</b> ♥</span>
+  </form>
+
+  <!-- MODAL MỪNG CƯỚI -->
+  <div class="modal" id="giftModal" hidden>
+    <div class="modal-card">
+      <h2 class="modal-title">Hộp Quà Yêu Thương</h2>
+      <p class="modal-sub">Quét QR code để gửi yêu thương trực tiếp tới:</p>
+      <div class="qr-cols">
+        <div class="qr-col qr-groom">
+          <p class="qr-role">Chú rể</p>
+          <div class="qr-frame"><img id="qrGroom" alt="QR chú rể" tabindex="0"></div>
+          <p class="qr-name" data-bind="gift.groom.name">...</p>
+          <p class="qr-bank" data-bind="gift.groom.bank">...</p>
+          <p class="qr-acc" data-bind="gift.groom.account">...</p>
+          <button class="copy-btn" data-copy="groom">Sao chép số TK</button>
+        </div>
+        <div class="qr-col qr-bride">
+          <p class="qr-role">Cô dâu</p>
+          <div class="qr-frame"><img id="qrBride" alt="QR cô dâu" tabindex="0"></div>
+          <p class="qr-name" data-bind="gift.bride.name">...</p>
+          <p class="qr-bank" data-bind="gift.bride.bank">...</p>
+          <p class="qr-acc" data-bind="gift.bride.account">...</p>
+          <button class="copy-btn" data-copy="bride">Sao chép số TK</button>
+        </div>
+      </div>
+      <button class="modal-close" id="giftClose">Đóng</button>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lb-close" id="lbClose" aria-label="Đóng">&times;</button>
+    <button class="lb-prev" id="lbPrev" aria-label="Trước">&#10094;</button>
+    <img class="lb-img" id="lbImg" alt="">
+    <button class="lb-next" id="lbNext" aria-label="Sau">&#10095;</button>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
