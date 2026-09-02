@@ -118,12 +118,12 @@ const WEDDING_CONFIG = {
     groom: {
       // REPLACE: thông tin nhận mừng cưới - chú rể
       name: 'PHẠM ĐẮC DY', bank: 'VIETINBANK', account: '105002523858',
-      qrImage: 'assets/img/QR_cr.jpg',
+      qrImage: 'assets/img/qr_cr.jpg',
     },
     bride: {
       // REPLACE: thông tin nhận mừng cưới - cô dâu
       name: 'TRẦN HUYỀN TRANG', bank: 'VPBANK', account: '35112626',
-      qrImage: 'assets/img/QR_cd.jpg',
+      qrImage: 'assets/img/qr_cd.jpg',
     },
   },
 
