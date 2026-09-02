@@ -435,7 +435,7 @@ body.pre-open .gb-stream, body.pre-open .gb-bar, body.pre-open .fab-avatar { opa
 .qr-frame img:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
 /* Phóng vùng mã vuông của từng ảnh QR gốc để mã luôn rõ và dễ quét. */
 .qr-groom .qr-frame img { width: 145%; left: -22.5%; top: -67.3%; }
-.qr-bride .qr-frame img { width: 255%; left: -80%; top: -147%; }
+.qr-bride .qr-frame img { width: 255%; left: -80%; top: -151%; }
 .qr-name { font-size: .86rem; font-weight: 600; margin-top: 8px; }
 .qr-bank { font-size: .82rem; color: #7d6a6d; }
 .qr-acc { font-size: 1rem; letter-spacing: 1px; margin: 3px 0 8px; }
