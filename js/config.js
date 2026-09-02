@@ -76,15 +76,6 @@ const WEDDING_CONFIG = {
   // Khối tiệc (2 bên)
   events: {
     groom: {
-      title: 'TIỆC CƯỚI NHÀ TRAI',
-      weekday: 'THỨ BẢY', time: '10:30', date: '26 . 09 . 2026',
-      // REPLACE: âm lịch (điền tay - hệ thống không tự tính)
-      lunar: 'Tức ngày 16 tháng 08 năm Bính Ngọ',
-      place: 'TẠI NHÀ HÀNG HƯƠNG SƠN', address: 'Khu phố Tân Hòa - Vĩnh Bảo - Hải Phòng',
-      // REPLACE: link Google Maps nhà trai
-      mapUrl: 'https://www.google.com/maps/place/Nh%C3%A0+H%C3%A0ng+H%C6%B0%C6%A1ng+S%C6%A1n/@20.6813425,106.4807734,17z/data=!3m1!4b1!4m6!3m5!1s0x31358b25edabec8f:0x646a17227fc703b!8m2!3d20.6813425!4d106.4807734!16s%2Fg%2F11csbd_xtx?entry=ttu&g_ep=EgoyMDI2MDgxNy4wIKXMDSoASAFQAw%3D%3D',
-    },
-    bride: {
       title: 'TIỆC CƯỚI NHÀ GÁI',
       weekday: 'CHỦ NHẬT', time: '17:30', date: '20 . 09 . 2026',
       // REPLACE: âm lịch
@@ -94,6 +85,17 @@ const WEDDING_CONFIG = {
       mapUrl: 'https://www.google.com/maps/place/Trung+T%C3%A2m+H%E1%BB%99i+Ngh%E1%BB%8B+Ti%E1%BB%87c+C%C6%B0%E1%BB%9Bi+Sen+H%E1%BB%93ng/data=!4m2!3m1!1s0x0:0xcd303eeb928ea16c?sa=X&ved=1t:2428&ictx=111',
 
     },
+    bride: {
+
+      title: 'TIỆC CƯỚI NHÀ TRAI',
+      weekday: 'THỨ BẢY', time: '10:30', date: '26 . 09 . 2026',
+      // REPLACE: âm lịch (điền tay - hệ thống không tự tính)
+      lunar: 'Tức ngày 16 tháng 08 năm Bính Ngọ',
+      place: 'TẠI NHÀ HÀNG HƯƠNG SƠN', address: 'Khu phố Tân Hòa - Vĩnh Bảo - Hải Phòng',
+      // REPLACE: link Google Maps nhà trai
+      mapUrl: 'https://www.google.com/maps/place/Nh%C3%A0+H%C3%A0ng+H%C6%B0%C6%A1ng+S%C6%A1n/@20.6813425,106.4807734,17z/data=!3m1!4b1!4m6!3m5!1s0x31358b25edabec8f:0x646a17227fc703b!8m2!3d20.6813425!4d106.4807734!16s%2Fg%2F11csbd_xtx?entry=ttu&g_ep=EgoyMDI2MDgxNy4wIKXMDSoASAFQAw%3D%3D',
+    
+    },
   },
 
   // Nghi lễ
@@ -102,7 +104,8 @@ const WEDDING_CONFIG = {
       title: 'LỄ VU QUY', when: 'VÀO THỨ BẢY - 06H30',
       month: 'THÁNG 09', day: '26', year: 'NĂM 2026',
       lunar: 'Tức ngày 16 tháng 08 năm Bính Ngọ',
-      place: 'TẠI TƯ GIA NHÀ GÁI',       mapUrl: 'https://www.google.com/maps/place/Trung+T%C3%A2m+H%E1%BB%99i+Ngh%E1%BB%8B+Ti%E1%BB%87c+C%C6%B0%E1%BB%9Bi+Sen+H%E1%BB%93ng/data=!4m2!3m1!1s0x0:0xcd303eeb928ea16c?sa=X&ved=1t:2428&ictx=111',
+      place: 'TẠI TƯ GIA NHÀ GÁI',
+      mapUrl: 'https://www.google.com/maps/search/?api=1&query=21.0599019,105.8069804',
 
     },
     thanhhon: {
