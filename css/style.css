@@ -64,6 +64,17 @@ body:not(.pre-open)::before {
     radial-gradient(ellipse at 90% 78%, rgba(31,83,63,.18) 0%, transparent 35%),
     linear-gradient(165deg, #0c3026 0%, #08231b 50%, #061b14 100%); }
 .intro.gone { opacity: 0; pointer-events: none; }
+/* Khi có guest trên URL: tạm ẩn intro để chờ API */
+.intro.waiting-guest {
+  visibility: hidden;
+}
+
+/* Có guest → ẩn toàn bộ trong lúc đọc guest.json */
+html.guest-loading .intro,
+html.guest-loading .card {
+  visibility: hidden;
+}
+
 .intro-photo { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; }
 .intro-scrim { position: absolute; inset: 0; background: transparent; transition: opacity .55s ease; }
 .intro-petals { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
@@ -72,14 +83,20 @@ body:not(.pre-open)::before {
 .orn-tl { top: -10px; left: -10px; } .orn-br { bottom: -10px; right: -10px; transform: rotate(180deg); }
 .intro-inner {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
   z-index: 2;
-  width: auto;
+  width: 100%;
   padding: 20px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   text-align: center;
 }
 .intro-names { width: 100%; display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: baseline; column-gap: 18px; margin-top: 26px; font-family: 'Great Vibes', cursive; color: #fff; font-size: clamp(38px, 10vw, 64px); line-height: 1; text-align: center; white-space: nowrap; text-shadow: 0 4px 40px rgba(0,0,0,.35); }
@@ -89,10 +106,55 @@ body:not(.pre-open)::before {
 .intro-div { color: var(--gold-soft); margin: 6px 0; letter-spacing: 4px; }
 .intro-date { font-family: var(--serif); color: var(--gold-soft); letter-spacing: 5px; font-size: 1rem; }
 .intro-sub { font-family: var(--script); color: #fffaf5; font-size: 1.5rem; margin: 6px 0 22px; opacity: .72; text-shadow: 0 2px 12px rgba(0,0,0,.22); }
-.intro-open { position: relative; isolation: isolate; overflow: hidden; min-width: 276px; font-family: 'Montserrat', sans-serif; font-weight: 500; letter-spacing: 4px; font-size: 11px; text-transform: uppercase; color: var(--gold-lt); text-shadow: none;
-  background: transparent; border: 1px solid rgb(201 168 76 / .6); border-radius: 0; padding: 15px 52px; cursor: pointer; display: inline-block;
+.intro-guest {
+  display: none;
+  font-family: var(--script);
+  color: var(--gold-soft);
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+
+.intro-guest.show {
+  display: block;
+  margin: -4px 0 22px;
+  animation: guestFadeIn .8s ease forwards;
+}
+
+@keyframes guestFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.intro-open {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-width: 276px;
+
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  letter-spacing: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+
+  color: var(--gold-lt);
+  background: transparent;
+  border: 1px solid rgb(201 168 76 / .6);
+  border-radius: 0;
+
+  padding: 15px 52px;
+  cursor: pointer;
+  display: inline-block;
+
   transition: all .35s;
-  animation: none; }
+  animation: none;
+}
 /* dải sáng quét ngang */
 .intro-open::before { content: ''; position: absolute; z-index: 0; top: -25%; bottom: -25%; left: 0; width: 34%; pointer-events: none; background: linear-gradient(90deg, rgba(255,244,202,0), rgba(255,244,202,.42), rgba(255,244,202,0)); transform: translateX(-340%) skewX(-18deg); animation: openShimmer 4.4s ease-in-out infinite; }
 /* khung viền đôi kiểu thiệp */
@@ -140,7 +202,7 @@ body:not(.pre-open)::before {
 .intro.reveal-curtain .curtain-r { transform: translateX(100%); }
 
 /* ===== NÚT NHẠC (nốt nhạc teal, fixed) ===== */
-.music-disc { position: fixed; bottom: 25px; right: 20px; top: auto; z-index: 520; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: none;
+.music-disc { position: fixed; bottom: 65px; right: 20px; top: auto; z-index: 520; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: none;
   background: radial-gradient(circle at 34% 30%, #2fc0a0 0%, var(--teal) 55%, #0e6b57 100%);
   box-shadow: 0 6px 16px rgba(0,0,0,.4); animation: spin 4s linear infinite; }
 .music-disc::after { content: '\266B'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.25rem; }
@@ -285,6 +347,51 @@ body:not(.pre-open)::before {
 }
 .gift-caption { font-family: var(--serif); color: var(--maroon); font-size: 1.15rem; }
 
+/* ===== PHẦN GỬI QUÀ MỪNG ===== */
+
+.sec.gift.reveal {
+  position: relative;
+
+  /* Section nhỏ gọn */
+  min-height: auto;
+  padding: 28px 20px;
+
+  /* Tạo khoảng cách với section trước và sau */
+  margin-top: 35px;
+  margin-bottom: 35px;
+
+  background: #fff;
+
+  /* Bóng rõ nhưng không quá nặng */
+  box-shadow:
+    0 -6px 14px rgba(0, 0, 0, 0.13),
+    0 6px 14px rgba(0, 0, 0, 0.13);
+
+  box-sizing: border-box;
+}
+
+
+/* Căn giữa toàn bộ nội dung */
+.sec.gift.reveal .gift-box {
+  text-align: center;
+}
+
+
+/* Khoảng cách hộp quà → chữ */
+.sec.gift.reveal .gift-caption {
+  margin-top: 32px;
+  margin-bottom: 0;
+
+  text-align: center;
+
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.5;
+
+  color: #222;
+}
+
 /* ===== 9. ALBUM ===== */
 .album { text-align: center; }
 .album-title { font-family: var(--serif); color: var(--maroon); font-size: 1.9rem; letter-spacing: 3px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -317,10 +424,91 @@ body:not(.pre-open)::before {
 .quote-text { font-size: .92rem; color: #6a5a5d; line-height: 1.8; max-width: 340px; margin: 0 auto; }
 
 /* ===== GUESTBOOK NỔI (chat bubble + thanh dưới) ===== */
-.gb-stream { position: fixed; left: 12px; bottom: 74px; z-index: 540; width: min(56vw, 260px); display: flex; flex-direction: column; gap: 5px; pointer-events: none; }
+/* .gb-stream { position: fixed; left: 12px; bottom: 74px; z-index: 540; width: min(56vw, 260px); display: flex; flex-direction: column; gap: 5px; pointer-events: none; }
 .gb-bubble { background: rgba(243,166,193,.26); color: #4d0a17; border-radius: 12px; padding: 6px 10px; font-size: .74rem; line-height: 1.3; backdrop-filter: blur(2px); animation: gbIn .5s ease; }
 .gb-bubble b { color: var(--script-red); margin-right: 4px; }
-@keyframes gbIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes gbIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } */
+
+/* ===== GUESTBOOK NỔI - CUỘN LIÊN TỤC ===== */
+.gb-stream {
+  position: fixed;
+  left: 12px;
+  bottom: 74px;
+  z-index: 540;
+  width: min(56vw, 260px);
+
+  /* chỉ hiển thị khoảng 4 lời chúc */
+  height: 205px;
+  overflow: hidden;
+
+  pointer-events: none;
+
+  /* che nhẹ phía trên/dưới cho đẹp */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+
+.gb-track {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  animation: gbScroll var(--gb-duration, 18s) linear infinite;
+  will-change: transform;
+}
+
+.gb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gb-bubble {
+  flex: none;
+
+  background: rgba(243,166,193,.26);
+  color: #4d0a17;
+  border-radius: 12px;
+  padding: 6px 10px;
+
+  font-size: .74rem;
+  line-height: 1.3;
+
+  backdrop-filter: blur(2px);
+}
+
+.gb-bubble b {
+  color: var(--script-red);
+  margin-right: 4px;
+}
+
+@keyframes gbScroll {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-50% - 2.5px));
+  }
+}
+
+/* rê chuột vào thì dừng - nếu sau này muốn */
+.gb-stream:hover .gb-track {
+  animation-play-state: paused;
+}
+
 
 .gb-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; z-index: 550; width: min(88vw, 380px); display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.94); border: 1px solid #d9c4c9; border-radius: 999px; padding: 5px 7px 5px 12px; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
 .gb-bar input { flex: 1; border: none; outline: none; font-family: var(--body); font-size: .78rem; background: transparent; }
@@ -337,7 +525,7 @@ body:not(.pre-open)::before {
 .fab-avatar {
   position: fixed;
   right: 20px;
-  bottom: 90px;
+  bottom: 125px;
   z-index: 545;
 
   width: 50px;
@@ -418,7 +606,46 @@ body.pre-open .gb-stream, body.pre-open .gb-bar, body.pre-open .fab-avatar { opa
 @keyframes floatUp { 0% { transform: translateY(0) scale(.6); opacity: 1; } 100% { transform: translateY(-72vh) scale(1.5); opacity: 0; } }
 
 /* ===== MODAL ===== */
-.modal { position: fixed; inset: 0; background: rgba(20,6,10,.5); z-index: 600; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; transition: opacity .28s ease; }
+/* .modal { position: fixed; inset: 0; background: rgba(20,6,10,.5); z-index: 600; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; transition: opacity .28s ease; } */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,6,10,.5);
+  z-index: 600;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  padding: 0;
+
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+
+#giftModal {
+  align-items: center;
+  padding: 16px;
+}
+
+#wishModal {
+  align-items: flex-end;
+}
+
+#wishModal .modal-card {
+  width: min(440px, calc(100vw - 24px));
+  max-width: 440px;
+  margin: 0 auto;
+  border-radius: 18px 18px 0 0;
+  transform: translateY(100%);
+}
+
+#wishModal.is-open .modal-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .modal[hidden] { display: none; }
 .modal.is-open { opacity: 1; }
 .modal-card { background: #fff; border-radius: 18px; padding: 32px 16px 16px; max-width: 576px; width: 100%; max-height: 90vh; overflow: auto; text-align: center; opacity: 0; transform: translateY(16px) scale(.92); transition: opacity .36s ease, transform .36s cubic-bezier(.2,.8,.2,1); }
@@ -473,3 +700,183 @@ body.tab-hidden .petal { animation-play-state: paused; }
 .bg-ready { filter: blur(0); transition: filter .45s ease; }
 .cover-photo.bg-lqip { filter: blur(12px) brightness(1.05); }   /* cover vốn có brightness */
 .cover-photo.bg-ready { filter: blur(0) brightness(1.05); transition: filter .45s ease; }
+
+
+/* ===== THANH GỬI LỜI CHÚC ===== */
+
+.gb-wish-open {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #999;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--body);
+  font-size: .78rem;
+  padding: 7px 0;
+}
+
+.gb-wish-open:hover {
+  color: var(--script-red);
+}
+
+
+/* ===== POPUP LỜI CHÚC ===== */
+
+.wish-modal-card {
+  position: relative;
+
+  width: 100%;
+  max-width: 440px;
+
+  margin: 0;
+
+  padding: 28px 28px 30px;
+
+  border-radius: 20px 20px 0 0;
+
+  transform: translateY(100%);
+  transition: opacity .36s ease,
+              transform .36s cubic-bezier(.2,.8,.2,1);
+}
+
+.modal.is-open .wish-modal-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wish-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+
+  border: none;
+  background: transparent;
+
+  color: #999;
+  font-size: 28px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.wish-modal-close:hover {
+  color: var(--script-red);
+}
+
+.wish-icon {
+  width: 100%;
+  height: 95px;
+
+  margin: -20px auto 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  box-shadow: none;
+}
+
+.wish-icon img {
+  display: block;
+
+  width: 180px;
+  max-width: 70vw;
+  height: auto;
+
+  object-fit: contain;
+}
+
+.wish-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.wish-form input,
+.wish-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #f3c5cb;
+  border-radius: 8px;
+
+  padding: 12px;
+
+  outline: none;
+
+  font-family: var(--body);
+  font-size: .85rem;
+
+  background: #fffafa;
+}
+
+.wish-form input {
+  height: 44px;
+}
+
+.wish-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.wish-form input:focus,
+.wish-form textarea:focus {
+  border-color: var(--script-red);
+  background: #fff;
+}
+
+.wish-form input::placeholder,
+.wish-form textarea::placeholder {
+  color: #aaa;
+}
+
+.wish-submit {
+  width: 100%;
+
+  border: none;
+  border-radius: 999px;
+
+  padding: 12px;
+
+  background: #ef5366;
+  color: #fff;
+
+  font-family: var(--body);
+  font-size: .85rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.wish-submit:hover {
+  opacity: .9;
+  transform: translateY(-1px);
+}
+
+.wish-submit:active {
+  transform: translateY(0);
+}
+
+.gb-time {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.72rem;
+  color: #999;
+  font-weight: 400;
+  text-align: right;
+}
+
+.intro-screen {
+  opacity: 0;
+}
+
+.intro-screen.ready {
+  opacity: 1;
+  transition: opacity .5s ease;
+}

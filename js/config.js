@@ -1,4 +1,7 @@
 const WEDDING_CONFIG = {
+
+  apiUrl: 'https://script.google.com/macros/s/AKfycby558bKQhUhPbWD8KHIo0dktkkzah26d7T62wLIAR9lB04Z3QPO81vbfJu_xeYqiGzdHw/exec',
+
   groom: {
     // REPLACE: tên chú rể
     name: 'Phạm Đắc Dy',

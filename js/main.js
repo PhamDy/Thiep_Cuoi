@@ -59,7 +59,58 @@
     $('#introDate').textContent = `${String(d.getDate()).padStart(2, '0')} · ${String(d.getMonth() + 1).padStart(2, '0')} · ${d.getFullYear()}`;
   }
 
-  function renderParty(id, ev) {
+async function loadGuestName() {
+    const guestEl = $('#introGuest');
+
+    const params = new URLSearchParams(window.location.search);
+    const key = params.get('guest');
+
+    // Không có ?guest=...
+    // → hiện website bình thường ngay
+    if (!key) {
+        guestEl.textContent = '';
+        guestEl.classList.remove('show');
+
+        document.documentElement.classList.remove('guest-loading');
+        return;
+    }
+
+    try {
+        // Đọc file JSON
+        const response = await fetch('./guest.json');
+
+        if (!response.ok) {
+            throw new Error('Không đọc được guest.json');
+        }
+
+        const guests = await response.json();
+
+        // Tìm tên theo key
+        const name = guests[key];
+
+        if (name) {
+            guestEl.textContent = name;
+            guestEl.classList.add('show');
+        } else {
+            // Không tồn tại key
+            guestEl.textContent = '';
+            guestEl.classList.remove('show');
+        }
+
+    } catch (error) {
+        console.error('Lỗi đọc guest.json:', error);
+
+        // Có lỗi → coi như không có guest
+        guestEl.textContent = '';
+        guestEl.classList.remove('show');
+
+    } finally {
+        // Đọc JSON xong → cho website hiện ra
+        document.documentElement.classList.remove('guest-loading');
+    }
+}
+
+function renderParty(id, ev) {
     const n = document.getElementById(id); n.innerHTML = '';
     const a = document.createElement('a'); a.href = ev.mapUrl; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Xem chỉ đường →';
     n.append(
@@ -258,19 +309,88 @@
     });
   }
 
-  function setupRsvp() {
-    const form = $('#rsvpForm');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const data = { name: form.guestname.value.trim(), attend: form.attend.value, guests: form.guests.value, side: form.side.value, at: new Date().toISOString() };
-      if (!data.name) return;
-      const list = JSON.parse(localStorage.getItem('thiepcuoi_rsvp') || '[]');
-      list.push(data); localStorage.setItem('thiepcuoi_rsvp', JSON.stringify(list));
-      // REPLACE: cắm API thật ở đây, ví dụ:
-      //   fetch('https://your-api/rsvp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
-      $('#rsvpThanks').hidden = false; form.reset();
-    });
-  }
+function setupRsvp() {
+  const form = $('#rsvpForm');
+
+  const attendRadios = form.querySelectorAll('input[name="attend"]');
+  const guestsSelect = form.guests;
+
+  // Khóa / mở số lượng người tham dự
+  const updateGuestsState = () => {
+    const notAttend = form.querySelector('input[name="attend"][value="no"]').checked;
+
+    guestsSelect.disabled = notAttend;
+
+    // Nếu không tham dự thì mặc định về 0
+    if (notAttend) {
+      guestsSelect.value = '1';
+    }
+  };
+
+  attendRadios.forEach((radio) => {
+    radio.addEventListener('change', updateGuestsState);
+  });
+
+  // Trạng thái ban đầu
+  updateGuestsState();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = form.guestname.value.trim();
+    const attend = form.attend.value;
+
+    // Không tham dự → Number = 0
+    const number = attend === 'no' ? '0' : form.guests.value;
+
+    const side = form.side.value;
+
+    if (!name) return;
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const oldText = submitBtn.textContent;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang gửi...';
+
+    try {
+      const body = new URLSearchParams({
+        action: 'rsvp',
+        name: name,
+        number: number,
+        attend: attend,
+        groomFamily: side === 'groom' ? 'Nhà trai' : '',
+        brideFamily: side === 'bride' ? 'Nhà gái' : ''
+      });
+
+      const response = await fetch(cfg.apiUrl, {
+        method: 'POST',
+        body: body
+      });
+
+      const result = await response.json();
+
+      if (!result.ok) {
+        throw new Error(result.message || 'Gửi xác nhận thất bại');
+      }
+
+      $('#rsvpThanks').hidden = false;
+
+      form.reset();
+
+      // Sau khi reset, mở lại dropdown
+      updateGuestsState();
+
+    } catch (error) {
+      console.error('Lỗi gửi RSVP:', error);
+      alert('Không thể gửi xác nhận. Vui lòng thử lại nhé ❤️');
+
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = oldText;
+    }
+  });
+}
 
   const WISH_KEY = 'thiepcuoi_wishes';
   const HEART_KEY = 'thiepcuoi_hearts';
@@ -281,24 +401,131 @@
     { author: 'Tuấn Anh', text: 'Chúc hai bạn trăm năm hạnh phúc bên nhau!' },
     { author: 'Thu Hà', text: 'Mãi mãi hạnh phúc, đầu bạc răng long nhé!' },
   ];
-  function getWishes() {
-    const list = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
-    return list.length ? list : SEED_WISHES;
-  }
-  let streamPos = 0;
-  function renderStream() {
-    const list = getWishes(); if (!list.length) return;
-    const wrap = $('#gbStream'); wrap.innerHTML = '';
-    const show = Math.min(4, list.length);
-    for (let i = 0; i < show; i++) {
-      const w = list[(streamPos + i) % list.length];
-      const li = el('gb-bubble', null, 'div');
-      li.append(el('', (w.author || 'Khách') + ':', 'b'));
-      li.append(document.createTextNode(' ' + w.text));
-      wrap.appendChild(li);
+  // function getWishes() {
+  //   const list = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
+  //   return list.length ? list : SEED_WISHES;
+  // }
+  async function getWishes() {
+  try {
+    const response = await fetch(`${cfg.apiUrl}?action=wishes`);
+
+    if (!response.ok) {
+      throw new Error('Không thể lấy danh sách lời chúc');
     }
-    streamPos = (streamPos + 1) % list.length;
+
+    const result = await response.json();
+
+    if (!result.ok || !Array.isArray(result.wishes)) {
+      throw new Error(result.message || 'Dữ liệu lời chúc không hợp lệ');
+    }
+
+    return result.wishes.map(item => ({
+      author: item.name,
+      text: item.message,
+      time: item.time
+    }));
+
+  } catch (error) {
+    console.error('Lỗi lấy lời chúc:', error);
+
+    // Nếu API lỗi thì vẫn hiện lời chúc mẫu
+    return SEED_WISHES;
   }
+}
+
+function formatWishTime(time) {
+  if (!time) return '';
+
+  const date = new Date(time);
+
+  if (isNaN(date.getTime())) {
+    return time;
+  }
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
+
+async function renderStream() {
+  const list = await getWishes();
+
+  if (!list.length) return;
+
+  const wrap = $('#gbStream');
+  if (!wrap) return;
+
+  // Xóa nội dung cũ
+  wrap.innerHTML = '';
+
+  // Track chứa 2 bản giống nhau để tạo vòng lặp liên tục
+  const track = document.createElement('div');
+  track.className = 'gb-track';
+
+  const createList = () => {
+    const listEl = document.createElement('div');
+    listEl.className = 'gb-list';
+
+    list.forEach((w) => {
+      const li = el('gb-bubble', null, 'div');
+
+      // Tên
+      li.append(
+        el('', (w.author || 'Khách') + ':', 'b')
+      );
+
+      // Nội dung
+      li.append(
+        document.createTextNode(' ' + (w.text || ''))
+      );
+
+      // Thời gian
+      if (w.time) {
+        const timeSpan = el(
+          'gb-time',
+          formatWishTime(w.time),
+          'span'
+        );
+
+        li.append(timeSpan);
+      }
+
+      listEl.appendChild(li);
+    });
+
+    return listEl;
+  };
+
+  // Bản 1
+  track.appendChild(createList());
+
+  // Bản 2 giống hệt bản 1
+  // để khi chạy hết bản 1 có thể nối tiếp bản 2
+  track.appendChild(createList());
+
+  wrap.appendChild(track);
+
+  /*
+   * Tốc độ cuộn:
+   * - ít lời chúc → chạy chậm
+   * - nhiều lời chúc → tự động lâu hơn
+   */
+  // const duration = Math.max(15, list.length * 2.5);
+
+  const duration = 12;
+
+  track.style.setProperty(
+    '--gb-duration',
+    `${duration}s`
+  );
+}
+
   let heartTotal = parseInt(localStorage.getItem(HEART_KEY) || '158', 10);
   function renderHeartCount() { const n = $('#heartCount'); if (n) n.textContent = heartTotal; }
   function shootHearts(n) {
@@ -312,23 +539,187 @@
       setTimeout(() => h.remove(), 2600);
     }
   }
+  // function setupGuestbook() {
+  //   renderHeartCount(); renderStream();
+  //   setInterval(renderStream, 3800);
+  //   const form = $('#wishForm');
+  //   form.addEventListener('submit', (e) => {
+  //     e.preventDefault();
+  //     const text = form.text.value.trim(); if (!text) return;
+  //     const list = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
+  //     list.push({ author: 'Bạn', text });
+  //     localStorage.setItem(WISH_KEY, JSON.stringify(list));
+  //     // REPLACE: cắm API thật ở đây nếu muốn lưu lời chúc lên server
+  //     form.reset(); streamPos = Math.max(0, list.length - 4); renderStream(); shootHearts(4);
+  //   });
+  //   $('#shootHeart').addEventListener('click', () => shootHearts(6));
+  //   const fab = $('#fabAvatar');
+  //   if (fab) fab.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  // }
+
   function setupGuestbook() {
-    renderHeartCount(); renderStream();
-    setInterval(renderStream, 3800);
-    const form = $('#wishForm');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const text = form.text.value.trim(); if (!text) return;
-      const list = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
-      list.push({ author: 'Bạn', text });
-      localStorage.setItem(WISH_KEY, JSON.stringify(list));
-      // REPLACE: cắm API thật ở đây nếu muốn lưu lời chúc lên server
-      form.reset(); streamPos = Math.max(0, list.length - 4); renderStream(); shootHearts(4);
+  renderHeartCount();
+  renderStream();
+
+  // setInterval(renderStream, 3800);
+
+  // ===== POPUP LỜI CHÚC =====
+  const wishModal = $('#wishModal');
+  const openWishModal = $('#openWishModal');
+  const wishModalClose = $('#wishModalClose');
+  const form = $('#wishForm');
+
+  // Mở popup
+  openWishModal.addEventListener('click', () => {
+    wishModal.hidden = false;
+
+    requestAnimationFrame(() => {
+      wishModal.classList.add('is-open');
     });
-    $('#shootHeart').addEventListener('click', () => shootHearts(6));
-    const fab = $('#fabAvatar');
-    if (fab) fab.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  });
+
+  // Đóng popup
+  const closeWishModal = () => {
+    wishModal.classList.remove('is-open');
+
+    setTimeout(() => {
+      wishModal.hidden = true;
+    }, 280);
+  };
+
+  wishModalClose.addEventListener('click', closeWishModal);
+
+  // Click ra ngoài popup để đóng
+  wishModal.addEventListener('click', (e) => {
+    if (e.target === wishModal) {
+      closeWishModal();
+    }
+  });
+
+  // Nhấn ESC để đóng
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !wishModal.hidden) {
+      closeWishModal();
+    }
+  });
+
+  // ===== GỬI LỜI CHÚC =====
+  // form.addEventListener('submit', (e) => {
+  //   e.preventDefault();
+
+  //   const author = form.author.value.trim();
+  //   const text = form.text.value.trim();
+
+  //   if (!author || !text) return;
+
+  //   // TẠM THỜI lưu localStorage để test.
+  //   // Sau khi Google Apps Script xong,
+  //   // sẽ thay đoạn này bằng API Google Sheet.
+  //   const list = JSON.parse(
+  //     localStorage.getItem(WISH_KEY) || '[]'
+  //   );
+
+  //   list.push({
+  //     author: author,
+  //     text: text
+  //   });
+
+  //   localStorage.setItem(
+  //     WISH_KEY,
+  //     JSON.stringify(list)
+  //   );
+
+  //   // Reset form
+  //   form.reset();
+
+  //   // Đóng popup
+  //   closeWishModal();
+
+  //   // Hiện lời chúc mới
+  //   streamPos = Math.max(0, list.length - 4);
+  //   renderStream();
+
+  //   // Hiệu ứng tim
+  //   shootHearts(4);
+  // });
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const author = form.author.value.trim();
+  const text = form.text.value.trim();
+
+  if (!author || !text) return;
+
+  // Lấy API URL từ config.js
+  const apiUrl = cfg.apiUrl;
+
+  // Hiện trạng thái đang gửi
+  const submitBtn = form.querySelector('.wish-submit');
+  const oldText = submitBtn.textContent;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Đang gửi...';
+
+  try {
+    const body = new URLSearchParams({
+      action: 'wishes',
+      name: author,
+      message: text
+    });
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: body
+    });
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(result.message || 'Gửi lời chúc thất bại');
+    }
+
+// Reset form
+form.reset();
+
+// Đóng popup
+closeWishModal();
+
+// Gọi lại API GET và hiển thị ngay lời chúc mới
+await renderStream();
+
+// Hiệu ứng tim
+shootHearts(4);
+
+  } catch (error) {
+    console.error('Lỗi gửi lời chúc:', error);
+    alert('Không thể gửi lời chúc. Vui lòng thử lại nhé ❤️');
+
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText;
   }
+});
+
+
+
+  // ===== BẮN TIM =====
+  $('#shootHeart').addEventListener('click', () => {
+    shootHearts(6);
+  });
+
+  // ===== VỀ ĐẦU TRANG =====
+  const fab = $('#fabAvatar');
+
+  if (fab) {
+    fab.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  }
+}
 
   function setupAOS() {
     const skip = ['cover-photo', 'cover-scrim', 'cover-inborder', 'cd-photo', 'cd-scrim', 'footer-photo', 'footer-scrim'];
@@ -369,20 +760,33 @@
     fillHearts($('#introPetals'), Math.round(n * 0.7));
   }
 
-  function init() {
-    bindText(); bindPhotos(); introDate();
+function init() {
+    bindText();
+    bindPhotos();
+    introDate();
+    loadGuestName();
+
     renderParty('partyGroom', cfg.events.groom);
     renderParty('partyBride', cfg.events.bride);
     renderCere('cereVuquy', cfg.ceremonies.vuquy);
     renderCere('cereThanhhon', cfg.ceremonies.thanhhon);
     renderCoverInfo();
-    startCountdown(); renderCalendar();
-    setupMusic(); setupIntro();
-    setupGift(); setupAlbum(); setupLightbox(); setupRsvp(); setupGuestbook();
-    setupAOS(); setupPetals();
-    // Tạm dừng hiệu ứng cánh hoa khi tab bị ẩn → đỡ tốn CPU/pin
-    document.addEventListener('visibilitychange', () => document.body.classList.toggle('tab-hidden', document.hidden));
-  }
+    startCountdown();
+    renderCalendar();
+    setupMusic();
+    setupIntro();
+    setupGift();
+    setupAlbum();
+    setupLightbox();
+    setupRsvp();
+    setupGuestbook();
+    setupAOS();
+    setupPetals();
+
+    document.addEventListener('visibilitychange', () =>
+      document.body.classList.toggle('tab-hidden', document.hidden)
+    );
+}
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thiệp cưới</title>
+  <title>Thiệp cưới Dy - Trang</title>
+   <link rel="icon" type="image/x-icon" href="assets/img/icon_web.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Great+Vibes&family=Montserrat:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -40,8 +41,14 @@
       </h1>
       <div class="intro-div">✦</div>
       <p class="intro-date" id="introDate">20 · 12 · 2026</p>
+
       <p class="intro-sub">Trân Trọng Kính Mời</p>
-      <button class="intro-open" id="introOpen">◆&nbsp;&nbsp;MỞ THIỆP&nbsp;&nbsp;◆</button>
+
+      <p class="intro-guest" id="introGuest"></p>
+
+      <button class="intro-open" id="introOpen">
+        ◆&nbsp;&nbsp;MỞ THIỆP&nbsp;&nbsp;◆
+      </button>
     </div>
 
     <!-- rèm mở -->
@@ -219,12 +226,65 @@
   <div class="gb-stream" id="gbStream" aria-live="polite"></div>
   <!-- REPLACE: ảnh đôi tròn nút nổi trỏ từ config.photos.avatar -->
   <button class="fab-avatar" id="fabAvatar" aria-label="Về đầu trang"></button>
-  <form class="gb-bar" id="wishForm">
+  <!-- <form class="gb-bar" id="wishForm">
     <input type="text" name="text" placeholder="Gửi lời chúc..." required>
     <button type="submit" class="gb-btn gb-send">Gửi</button>
     <button type="button" class="gb-btn gb-shoot" id="shootHeart">Bắn tim</button>
     <span class="gb-count"><b id="heartCount">0</b> ♥</span>
-  </form>
+  </form> -->
+  <div class="gb-bar" id="wishBar">
+  <button type="button" class="gb-wish-open" id="openWishModal">
+    Gửi lời chúc...
+  </button>
+
+  <button type="button" class="gb-btn gb-shoot" id="shootHeart">
+    Bắn tim
+  </button>
+
+  <span class="gb-count">
+    <b id="heartCount">0</b> ♥
+  </span>
+</div>
+
+<!-- POPUP LỜI CHÚC -->
+<div class="modal" id="wishModal" hidden>
+  <div class="modal-card wish-modal-card">
+
+    <button type="button" class="wish-modal-close" id="wishModalClose">
+      &times;
+    </button>
+
+    <div class="wish-icon">
+       <img src="assets/img/message_heart.png" alt="Lời chúc">
+    </div>
+
+    <h2 class="modal-title">Lời chúc</h2>
+
+    <form id="wishForm" class="wish-form">
+
+      <input
+        type="text"
+        name="author"
+        placeholder="Tên của bạn"
+        maxlength="80"
+        required
+      >
+
+      <textarea
+        name="text"
+        placeholder="Lời chúc của bạn"
+        maxlength="500"
+        required
+      ></textarea>
+
+      <button type="submit" class="wish-submit">
+        Gửi Lời Chúc
+      </button>
+
+    </form>
+
+  </div>
+</div>
 
   <!-- MODAL MỪNG CƯỚI -->
   <div class="modal" id="giftModal" hidden>
@@ -265,3 +325,9 @@
   <script src="js/main.js"></script>
 </body>
 </html>
+
+<script>
+  if (new URLSearchParams(location.search).has('guest')) {
+    document.documentElement.classList.add('guest-loading');
+  }
+</script>
