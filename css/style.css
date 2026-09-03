@@ -48,7 +48,7 @@ body:not(.pre-open)::before {
 .script-title { font-family: var(--script); color: var(--script-red); font-size: 2.2rem; text-align: center; margin-bottom: 18px; }
 
 .reveal { }
-.aos { opacity: 0; transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); will-change: opacity, transform; }
+.aos { opacity: 0; transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
 .aos.aos-up { transform: translateY(38px); }
 .aos.aos-down { transform: translateY(-30px); }
 .aos.aos-left { transform: translateX(-46px); }
@@ -149,9 +149,9 @@ body:not(.pre-open)::before {
 
 /* ===== CÁNH HOA / LÁ RƠI (gold) ===== */
 .petals { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
-.petal { position: absolute; top: -30px; color: var(--gold-soft); animation: fall linear infinite; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+.petal { position: absolute; top: -30px; color: var(--gold-soft); animation: fall linear infinite; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
 .petals.hearts .petal { color: var(--heart); }
-.intro-petals .petal { color: #b77f2c; opacity: .96; filter: drop-shadow(0 2px 2px rgba(98,62,20,.25)); }
+.intro-petals .petal { color: #b77f2c; opacity: .96; text-shadow: 0 2px 2px rgba(98,62,20,.25); }
 @keyframes fall { 0% { transform: translateY(-10vh) rotate(0); opacity: 0; } 12% { opacity: .9; } 100% { transform: translateY(110vh) rotate(320deg); opacity: .35; } }
 
 /* ===== 1. COVER ===== */
@@ -455,3 +455,21 @@ body.pre-open .gb-stream, body.pre-open .gb-bar, body.pre-open .fab-avatar { opa
   .cd-unit { min-width: 54px; } .cd-unit span { font-size: 1.4rem; }
   .qr-cols { flex-direction: column; }
 }
+
+/* ===== PERFORMANCE: bỏ decode/paint cho section ngoài màn hình ===== */
+/* Section chưa tới gần khung nhìn sẽ không bị giải mã ảnh nền/vẽ → cuộn mượt, tải nhẹ.
+   Loại trừ .cover (above-the-fold). contain-intrinsic-size giữ chiều cao ước lượng để
+   thanh cuộn không nhảy; từ khoá auto sẽ ghi nhớ chiều cao thật sau lần render đầu. */
+.card .sec:not(.cover) { content-visibility: auto; contain-intrinsic-size: 0 700px; }
+.card .sec:not(.cover) { contain-intrinsic-size: auto 700px; } /* nâng cấp: ghi nhớ chiều cao thật (trình duyệt hỗ trợ) */
+/* Khi đang tự cuộn: cần chiều cao THẬT để tính quãng cuộn → tạm tắt content-visibility */
+body.autoscrolling .card .sec:not(.cover) { content-visibility: visible; }
+/* Dừng cánh hoa rơi khi tab bị ẩn (bật/tắt bằng js/main.js) */
+body.tab-hidden .petal { animation-play-state: paused; }
+
+/* ===== BLUR-UP: nền mờ tí hon (LQIP) hiện ngay, nét dần khi ảnh full giải mã xong ===== */
+/* Giữ cùng danh sách hàm filter giữa 2 trạng thái để transition mượt (blur N → blur 0). */
+.bg-lqip { filter: blur(12px); }
+.bg-ready { filter: blur(0); transition: filter .45s ease; }
+.cover-photo.bg-lqip { filter: blur(12px) brightness(1.05); }   /* cover vốn có brightness */
+.cover-photo.bg-ready { filter: blur(0) brightness(1.05); transition: filter .45s ease; }

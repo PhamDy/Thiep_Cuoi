@@ -26,7 +26,7 @@ const WEDDING_CONFIG = {
   // REPLACE: ngày & giờ lễ chính (ISO 8601) — dùng cho countdown + lịch
   weddingDate: '2026-09-20T09:30:00',
   // REPLACE: tốc độ auto-scroll sau khi mở thiệp (giây để cuộn hết trang)
-  autoScrollSeconds: 60,
+  autoScrollSeconds: 48,
   // REPLACE: dừng bao nhiêu giây ở ảnh cover trước khi bắt đầu tự cuộn
   autoScrollDelaySeconds: 0.2,
 
@@ -58,6 +58,17 @@ const WEDDING_CONFIG = {
     avatar: 'assets/img/photo-3.svg',
   },
 
+  // Ảnh mờ tí hon (LQIP) tải tức thì làm nền tạm; ảnh full ở `photos` sẽ nét dần khi tải xong.
+  // Cùng key với `photos`. Sinh lại bằng script khi thay ảnh gốc. Bỏ trống → không có nền mờ.
+  photosLqip: {
+    cover: 'assets/img/lqip/cover.jpg',
+    invite: 'assets/img/lqip/invite.jpg',
+    countdown: 'assets/img/lqip/countdown.jpg',
+    footer: 'assets/img/lqip/footer.jpg',
+    love: 'assets/img/lqip/love.jpg',
+    you: 'assets/img/lqip/you.jpg',
+  },
+
   // REPLACE: album ảnh cưới (carousel + thumbnail)
   gallery: [
     // 'assets/img/ph-g1.svg',
@@ -67,7 +78,16 @@ const WEDDING_CONFIG = {
     'assets/img/6.jpg',
     'assets/img/7.jpg',
     'assets/img/8.jpg',
-    'assets/img/9.jpg',    
+    'assets/img/9.jpg',
+  ],
+
+  // Ảnh tem cho dải thumbnail (nhẹ, ~kích thước hiển thị). Ảnh gốc ở `gallery` vẫn dùng
+  // full-res cho carousel + lightbox. Phải cùng thứ tự với `gallery`. Bỏ trống → dùng lại `gallery`.
+  galleryThumbs: [
+    'assets/img/thumb/6.jpg',
+    'assets/img/thumb/7.jpg',
+    'assets/img/thumb/8.jpg',
+    'assets/img/thumb/9.jpg',
   ],
 
   // REPLACE: file nhạc nền (.mp3) sạch, đặt trong assets/audio/ rồi trỏ vào đây

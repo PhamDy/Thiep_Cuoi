@@ -4,6 +4,12 @@
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const resolve = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), cfg);
   const el = (cls, txt, tag = 'p') => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  // Gán src cho <img> sau khi ảnh đã giải mã ngoài main thread → không khựng khi hiện ảnh lớn.
+  const swapDecoded = (imgEl, src, after) => {
+    const set = () => { imgEl.src = src; if (after) after(); };
+    const tmp = new Image(); tmp.src = src;
+    if (tmp.decode) tmp.decode().then(set).catch(set); else set();
+  };
 
   const monthNames = ['Một', 'Hai', 'Ba', 'Bốn', 'Năm', 'Sáu', 'Bảy', 'Tám', 'Chín', 'Mười', 'Mười Một', 'Mười Hai'];
   const weddingDate = new Date(cfg.weddingDate);
@@ -13,7 +19,38 @@
   }
   function bindPhotos() {
     const map = { introPhoto: 'intro', coverPhoto: 'cover', invitePhoto: 'invite', countdownPhoto: 'countdown', footerPhoto: 'footer', lovePhoto: 'love', youPhoto: 'you' };
-    Object.entries(map).forEach(([id, key]) => { const n = document.getElementById(id); if (n && cfg.photos[key]) n.style.backgroundImage = `url('${cfg.photos[key]}')`; });
+    const lqip = cfg.photosLqip || {};
+    // Ảnh trên màn hình (intro + cover) nạp ngay; phần còn lại nạp khi section sắp lọt viewport.
+    const eager = new Set(['introPhoto', 'coverPhoto']);
+    // Gán ảnh full: GIẢI MÃ ngoài main thread trước, gán xong mới bỏ nền mờ → không khựng frame.
+    const applyFull = (n, url) => {
+      const done = () => { n.style.backgroundImage = `url('${url}')`; n.classList.remove('bg-lqip'); n.classList.add('bg-ready'); };
+      const pre = new Image(); pre.src = url;
+      if (pre.decode) pre.decode().then(done).catch(done); else { pre.onload = done; pre.onerror = done; }
+    };
+    const byTarget = new Map();
+    Object.entries(map).forEach(([id, key]) => {
+      const n = document.getElementById(id);
+      if (!n || !cfg.photos[key]) return;
+      // Nền mờ tí hon hiện tức thì (nếu có) → không có ô trống, không "pop" khi ảnh full tới.
+      if (lqip[key]) { n.style.backgroundImage = `url('${lqip[key]}')`; n.classList.add('bg-lqip'); }
+      if (eager.has(id)) { applyFull(n, cfg.photos[key]); return; }
+      const t = n.closest('.sec') || n;               // quan sát cả section (love+you chung 1 section)
+      if (!byTarget.has(t)) byTarget.set(t, []);
+      byTarget.get(t).push([n, cfg.photos[key]]);
+    });
+    if (byTarget.size && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          (en.target.__bgs || []).forEach(([n, url]) => applyFull(n, url));
+          obs.unobserve(en.target);
+        });
+      }, { rootMargin: '600px 0px' });               // tải+giải mã sớm 600px để kịp sẵn sàng trước khi thấy
+      byTarget.forEach((pairs, t) => { t.__bgs = pairs; io.observe(t); });
+    } else {
+      byTarget.forEach((pairs) => pairs.forEach(([n, url]) => applyFull(n, url)));
+    }
     // const fab = document.getElementById('fabAvatar');
     // if (fab && cfg.photos.avatar) fab.style.backgroundImage = `url('${cfg.photos.avatar}')`;
   }
@@ -122,21 +159,31 @@
   function startAutoScroll() {
     const secs = cfg.autoScrollSeconds || 60;
     const delay = Math.max(0, (cfg.autoScrollDelaySeconds != null ? cfg.autoScrollDelaySeconds : 0.2) * 1000);
-    let stopped = false, startTs = null, armed = false;
+    let stopped = false, lastTs = null, armed = false;
     setTimeout(() => { armed = true; }, 600);
-    const total = () => document.documentElement.scrollHeight - window.innerHeight;
-    const stop = () => { if (!armed) return; stopped = true; remove(); };
+    const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
+    // Tạm tắt content-visibility để scrollHeight = chiều cao thật (xem body.autoscrolling trong CSS)
+    const endCv = () => document.body.classList.remove('autoscrolling');
+    const stop = () => { if (!armed) return; stopped = true; endCv(); remove(); };
     const remove = () => ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((ev) => window.removeEventListener(ev, stop));
     ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((ev) => window.addEventListener(ev, stop, { passive: true }));
     function frame(ts) {
       if (stopped) return;
-      if (startTs == null) startTs = ts;
-      const p = Math.min((ts - startTs) / (secs * 1000), 1);
-      window.scrollTo(0, total() * p);
-      if (p < 1) requestAnimationFrame(frame); else remove();
+      if (lastTs == null) lastTs = ts;
+      const dt = ts - lastTs; lastTs = ts;
+      const target = maxScroll();
+      const speed = target / (secs * 1000);             // px mỗi ms để cuộn hết trang trong ~secs giây
+      const y = Math.min(window.scrollY + speed * dt, target);
+      // instant từng frame (KHÔNG để scroll-behavior:smooth của CSS xen vào, tránh giật/kẹt)
+      window.scrollTo({ top: y, behavior: 'auto' });
+      if (y < target - 1) requestAnimationFrame(frame); else { endCv(); remove(); }
     }
     // dừng lại cho khách kịp nhìn ảnh cover rồi mới cuộn
-    setTimeout(() => { if (!stopped) requestAnimationFrame(frame); }, delay);
+    setTimeout(() => {
+      if (stopped) return;
+      document.body.classList.add('autoscrolling'); // ép mọi section render ở chiều cao thật trước khi cuộn
+      requestAnimationFrame(frame);
+    }, delay);
   }
 
   function setupGift() {
@@ -176,15 +223,17 @@
     const show = (i, instant) => {
       carIndex = (i + cfg.gallery.length) % cfg.gallery.length;
       markThumbs();
-      if (instant) { img.src = cfg.gallery[carIndex]; return; }
+      if (instant) { swapDecoded(img, cfg.gallery[carIndex]); return; }
       img.classList.add('fading');
       clearTimeout(fadeTimer);
-      fadeTimer = setTimeout(() => { img.src = cfg.gallery[carIndex]; img.classList.remove('fading'); }, 300);
+      // Giải mã ảnh lớn ngoài main thread trước khi hiện → không giật lúc chuyển ảnh
+      fadeTimer = setTimeout(() => swapDecoded(img, cfg.gallery[carIndex], () => img.classList.remove('fading')), 300);
     };
     const stopAuto = () => { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } };
     const startAuto = () => { stopAuto(); autoTimer = setInterval(() => { if (!document.hidden) show(carIndex + 1); }, 4000); };
     const manual = (fn) => () => { stopAuto(); fn(); };
-    cfg.gallery.forEach((src, i) => { const t = document.createElement('img'); t.src = src; t.alt = `Ảnh ${i + 1}`; t.loading = 'lazy'; t.addEventListener('click', manual(() => show(i))); thumbs.appendChild(t); });
+    const thumbSrc = (i) => (cfg.galleryThumbs && cfg.galleryThumbs[i]) || cfg.gallery[i];
+    cfg.gallery.forEach((src, i) => { const t = document.createElement('img'); t.src = thumbSrc(i); t.alt = `Ảnh ${i + 1}`; t.loading = 'lazy'; t.decoding = 'async'; t.addEventListener('click', manual(() => show(i))); thumbs.appendChild(t); });
     $('#carPrev').addEventListener('click', manual(() => show(carIndex - 1)));
     $('#carNext').addEventListener('click', manual(() => show(carIndex + 1)));
     $('#carFull').addEventListener('click', manual(() => openLightbox(carIndex)));
@@ -194,8 +243,8 @@
   }
 
   let lbIndex = 0;
-  function openLightbox(i) { lbIndex = i; $('#lbImg').src = cfg.gallery[i]; $('#lightbox').hidden = false; }
-  function moveLightbox(step) { lbIndex = (lbIndex + step + cfg.gallery.length) % cfg.gallery.length; $('#lbImg').src = cfg.gallery[lbIndex]; }
+  function openLightbox(i) { lbIndex = i; swapDecoded($('#lbImg'), cfg.gallery[i]); $('#lightbox').hidden = false; }
+  function moveLightbox(step) { lbIndex = (lbIndex + step + cfg.gallery.length) % cfg.gallery.length; swapDecoded($('#lbImg'), cfg.gallery[lbIndex]); }
   function setupLightbox() {
     $('#lbClose').addEventListener('click', () => ($('#lightbox').hidden = true));
     $('#lbPrev').addEventListener('click', () => moveLightbox(-1));
@@ -289,7 +338,12 @@
       es.forEach((en) => {
         if (!en.isIntersecting) return;
         Array.from(en.target.children).filter((c) => !isSkip(c) && c.classList.contains('aos'))
-          .forEach((c, i) => setTimeout(() => c.classList.add('aos-in'), i * 140));
+          .forEach((c, i) => setTimeout(() => {
+            c.style.willChange = 'opacity, transform';           // chỉ bật GPU layer ngay trước khi chạy
+            c.classList.add('aos-in');
+            const done = () => { c.style.willChange = 'auto'; c.removeEventListener('transitionend', done); };
+            c.addEventListener('transitionend', done);           // ...rồi tắt để không giữ layer vĩnh viễn
+          }, i * 140));
         io.unobserve(en.target);
       });
     }, { threshold: 0.14 });
@@ -326,6 +380,8 @@
     setupMusic(); setupIntro();
     setupGift(); setupAlbum(); setupLightbox(); setupRsvp(); setupGuestbook();
     setupAOS(); setupPetals();
+    // Tạm dừng hiệu ứng cánh hoa khi tab bị ẩn → đỡ tốn CPU/pin
+    document.addEventListener('visibilitychange', () => document.body.classList.toggle('tab-hidden', document.hidden));
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
