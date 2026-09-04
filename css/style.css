@@ -668,8 +668,23 @@ body.pre-open .gb-stream, body.pre-open .gb-bar, body.pre-open .fab-avatar { opa
 .qr-acc { font-size: 1rem; letter-spacing: 1px; margin: 3px 0 8px; }
 .copy-btn { border: none; border-radius: 999px; padding: 7px 13px; font-size: .78rem; cursor: pointer; background: #f0eef4; color: var(--maroon); }
 .copy-btn:hover { background: #e6e2ee; }
-.modal-close { margin-top: 16px; border: 1px solid #d8d0d2; background: #fff; color: var(--ink); border-radius: 6px; padding: 9px 22px; cursor: pointer; }
+.modal-close {
+  margin-top: 16px;
+  border: 1px solid #d8d0d2;
+  background: #fff;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 9px 22px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
 
+.modal-close:hover,
+.modal-close:focus-visible {
+  background: var(--maroon);
+  color: #fff;
+  border-color: var(--maroon);
+}
 /* ===== LIGHTBOX ===== */
 .lightbox { position: fixed; inset: 0; background: rgba(20,6,10,.9); z-index: 700; display: flex; align-items: center; justify-content: center; }
 .lightbox[hidden] { display: none; }

@@ -253,12 +253,31 @@ function renderParty(id, ev) {
     $('#giftOpen').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
     $('#giftClose').addEventListener('click', close);
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
-    ['qrGroom', 'qrBride'].forEach((id) => {
-      const qr = document.getElementById(id);
-      const enlarge = () => { $('#lbImg').src = qr.src; $('#lightbox').hidden = false; };
-      qr.addEventListener('click', enlarge);
-      qr.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enlarge(); } });
-    });
+
+['qrGroom', 'qrBride'].forEach((id) => {
+  const qr = document.getElementById(id);
+
+  const enlarge = () => {
+    $('#lbImg').src = qr.src;
+
+    // QR chỉ xem ảnh, không cho chuyển ảnh
+    isQrLightbox = true;
+    $('#lbPrev').style.display = 'none';
+    $('#lbNext').style.display = 'none';
+
+    $('#lightbox').hidden = false;
+  };
+
+  qr.addEventListener('click', enlarge);
+
+  qr.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      enlarge();
+    }
+  });
+});
+
     $$('.copy-btn').forEach((b) => b.addEventListener('click', () => {
       const acc = cfg.gift[b.getAttribute('data-copy')].account;
       const done = () => { const t = b.textContent; b.textContent = 'Đã sao chép ✓'; setTimeout(() => (b.textContent = t), 1500); };
@@ -293,21 +312,66 @@ function renderParty(id, ev) {
     startAuto();
   }
 
+  let isQrLightbox = false;
+
   let lbIndex = 0;
-  function openLightbox(i) { lbIndex = i; swapDecoded($('#lbImg'), cfg.gallery[i]); $('#lightbox').hidden = false; }
+
+function openLightbox(i) {
+  lbIndex = i;
+
+  // Album → cho phép chuyển ảnh
+  isQrLightbox = false;
+  $('#lbPrev').style.display = '';
+  $('#lbNext').style.display = '';
+
+  swapDecoded($('#lbImg'), cfg.gallery[i]);
+  $('#lightbox').hidden = false;
+}
+
   function moveLightbox(step) { lbIndex = (lbIndex + step + cfg.gallery.length) % cfg.gallery.length; swapDecoded($('#lbImg'), cfg.gallery[lbIndex]); }
-  function setupLightbox() {
-    $('#lbClose').addEventListener('click', () => ($('#lightbox').hidden = true));
-    $('#lbPrev').addEventListener('click', () => moveLightbox(-1));
-    $('#lbNext').addEventListener('click', () => moveLightbox(1));
-    $('#lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') $('#lightbox').hidden = true; });
-    document.addEventListener('keydown', (e) => {
-      if ($('#lightbox').hidden) return;
-      if (e.key === 'Escape') $('#lightbox').hidden = true;
-      if (e.key === 'ArrowLeft') moveLightbox(-1);
-      if (e.key === 'ArrowRight') moveLightbox(1);
-    });
-  }
+function setupLightbox() {
+
+  // Đóng bằng nút X
+  $('#lbClose').addEventListener('click', () => {
+    $('#lightbox').hidden = true;
+
+    // Reset lại nút Previous / Next
+    $('#lbPrev').style.display = '';
+    $('#lbNext').style.display = '';
+  });
+
+  $('#lbPrev').addEventListener('click', () => moveLightbox(-1));
+  $('#lbNext').addEventListener('click', () => moveLightbox(1));
+
+  // Click ra ngoài ảnh để đóng
+  $('#lightbox').addEventListener('click', (e) => {
+    if (e.target.id === 'lightbox') {
+      $('#lightbox').hidden = true;
+
+      // Reset lại nút Previous / Next
+      $('#lbPrev').style.display = '';
+      $('#lbNext').style.display = '';
+    }
+  });
+
+  // Phím ESC / ← / →
+  document.addEventListener('keydown', (e) => {
+    if ($('#lightbox').hidden) return;
+
+    if (e.key === 'Escape') {
+      $('#lightbox').hidden = true;
+
+      // Reset lại nút Previous / Next
+      $('#lbPrev').style.display = '';
+      $('#lbNext').style.display = '';
+    }
+
+    if (isQrLightbox) return;
+
+    if (e.key === 'ArrowLeft') moveLightbox(-1);
+    if (e.key === 'ArrowRight') moveLightbox(1);
+  });
+}
 
 function setupRsvp() {
   const form = $('#rsvpForm');
