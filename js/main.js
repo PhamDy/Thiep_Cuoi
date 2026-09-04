@@ -346,6 +346,21 @@ function openLightbox(i) {
   function moveLightbox(step) { lbIndex = (lbIndex + step + cfg.gallery.length) % cfg.gallery.length; swapDecoded($('#lbImg'), cfg.gallery[lbIndex]); }
 function setupLightbox() {
 
+    // Phóng to ảnh cô dâu / chú rể
+  $$('.zoomable-photo').forEach((img) => {
+    img.addEventListener('click', () => {
+      isQrLightbox = true;
+
+      $('#lbPrev').style.display = 'none';
+      $('#lbNext').style.display = 'none';
+
+      $('#lbImg').src = img.src;
+      $('#lbImg').alt = img.alt;
+
+      $('#lightbox').hidden = false;
+    });
+  });
+
   // Đóng bằng nút X
   $('#lbClose').addEventListener('click', () => {
     $('#lightbox').hidden = true;
@@ -597,12 +612,14 @@ async function renderStream() {
    */
   // const duration = Math.max(15, list.length * 2.5);
 
-  const duration = 12;
+    const duration = 10;
 
-  track.style.setProperty(
-    '--gb-duration',
-    `${duration}s`
-  );
+    track.style.setProperty(
+      '--gb-duration',
+      `${duration}s`
+    );
+
+
 }
 
   let heartTotal = parseInt(localStorage.getItem(HEART_KEY) || '158', 10);
@@ -618,27 +635,32 @@ async function renderStream() {
       setTimeout(() => h.remove(), 2600);
     }
   }
-  // function setupGuestbook() {
-  //   renderHeartCount(); renderStream();
-  //   setInterval(renderStream, 3800);
-  //   const form = $('#wishForm');
-  //   form.addEventListener('submit', (e) => {
-  //     e.preventDefault();
-  //     const text = form.text.value.trim(); if (!text) return;
-  //     const list = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
-  //     list.push({ author: 'Bạn', text });
-  //     localStorage.setItem(WISH_KEY, JSON.stringify(list));
-  //     // REPLACE: cắm API thật ở đây nếu muốn lưu lời chúc lên server
-  //     form.reset(); streamPos = Math.max(0, list.length - 4); renderStream(); shootHearts(4);
-  //   });
-  //   $('#shootHeart').addEventListener('click', () => shootHearts(6));
-  //   const fab = $('#fabAvatar');
-  //   if (fab) fab.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  // }
 
   function setupGuestbook() {
   renderHeartCount();
   renderStream();
+
+    // ===== ẨN / HIỆN LỜI CHÚC =====
+  const gbStream = $('#gbStream');
+  const gbToggle = $('#gbToggle');
+
+  if (gbStream && gbToggle) {
+    gbToggle.addEventListener('click', () => {
+      const hidden = gbStream.classList.toggle('is-hidden');
+
+      gbToggle.classList.toggle('is-hidden', hidden);
+
+      gbToggle.setAttribute('aria-pressed', String(hidden));
+
+      if (hidden) {
+        gbToggle.setAttribute('aria-label', 'Hiện lời chúc');
+        gbToggle.setAttribute('title', 'Hiện lời chúc');
+      } else {
+        gbToggle.setAttribute('aria-label', 'Ẩn lời chúc');
+        gbToggle.setAttribute('title', 'Ẩn lời chúc');
+      }
+    });
+  }
 
   // setInterval(renderStream, 3800);
 
@@ -681,46 +703,6 @@ async function renderStream() {
       closeWishModal();
     }
   });
-
-  // ===== GỬI LỜI CHÚC =====
-  // form.addEventListener('submit', (e) => {
-  //   e.preventDefault();
-
-  //   const author = form.author.value.trim();
-  //   const text = form.text.value.trim();
-
-  //   if (!author || !text) return;
-
-  //   // TẠM THỜI lưu localStorage để test.
-  //   // Sau khi Google Apps Script xong,
-  //   // sẽ thay đoạn này bằng API Google Sheet.
-  //   const list = JSON.parse(
-  //     localStorage.getItem(WISH_KEY) || '[]'
-  //   );
-
-  //   list.push({
-  //     author: author,
-  //     text: text
-  //   });
-
-  //   localStorage.setItem(
-  //     WISH_KEY,
-  //     JSON.stringify(list)
-  //   );
-
-  //   // Reset form
-  //   form.reset();
-
-  //   // Đóng popup
-  //   closeWishModal();
-
-  //   // Hiện lời chúc mới
-  //   streamPos = Math.max(0, list.length - 4);
-  //   renderStream();
-
-  //   // Hiệu ứng tim
-  //   shootHearts(4);
-  // });
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -765,6 +747,7 @@ form.reset();
 closeWishModal();
 
 // Gọi lại API GET và hiển thị ngay lời chúc mới
+// Giữ lời chúc mới ở đầu 4 giây để người dùng kịp nhìn
 await renderStream();
 
 // Hiệu ứng tim

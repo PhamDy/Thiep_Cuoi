@@ -107,6 +107,7 @@
               alt="Cô dâu Huyền Trang"
               loading="lazy"
               decoding="async"
+              class="zoomable-photo"
             >
           </div>
 
@@ -125,6 +126,7 @@
               alt="Chú rể Đắc Dy"
               loading="lazy"
               decoding="async"
+              class="zoomable-photo"
             >
           </div>
 
@@ -275,16 +277,26 @@
     </footer>
   </div>
 
-  <!-- SỔ LƯU BÚT NỔI: chat bubble + thanh dưới -->
+  <!-- SỔ LƯU BÚT NỔI -->
   <div class="gb-stream" id="gbStream" aria-live="polite"></div>
-  <!-- REPLACE: ảnh đôi tròn nút nổi trỏ từ config.photos.avatar -->
+
+  <!-- NÚT ẨN / HIỆN LỜI CHÚC -->
+  <button
+    type="button"
+    class="gb-toggle"
+    id="gbToggle"
+    aria-label="Ẩn lời chúc"
+    aria-pressed="false"
+    title="Ẩn lời chúc"
+  >
+    💬
+  </button>
+
+  <!-- NÚT VỀ ĐẦU TRANG -->
   <button class="fab-avatar" id="fabAvatar" aria-label="Về đầu trang"></button>
-  <!-- <form class="gb-bar" id="wishForm">
-    <input type="text" name="text" placeholder="Gửi lời chúc..." required>
-    <button type="submit" class="gb-btn gb-send">Gửi</button>
-    <button type="button" class="gb-btn gb-shoot" id="shootHeart">Bắn tim</button>
-    <span class="gb-count"><b id="heartCount">0</b> ♥</span>
-  </form> -->
+
+
+
   <div class="gb-bar" id="wishBar">
   <button type="button" class="gb-wish-open" id="openWishModal">
     Gửi lời chúc...
