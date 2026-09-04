@@ -28,10 +28,8 @@ const WEDDING_CONFIG = {
 
   // REPLACE: ngày & giờ lễ chính (ISO 8601) — dùng cho countdown + lịch
   weddingDate: '2026-09-20T09:30:00',
-  // REPLACE: tốc độ auto-scroll sau khi mở thiệp (giây để cuộn hết trang)
-  autoScrollSeconds: 48,
-  // REPLACE: dừng bao nhiêu giây ở ảnh cover trước khi bắt đầu tự cuộn
-  autoScrollDelaySeconds: 0.2,
+  autoScrollSeconds: 70,
+  autoScrollDelaySeconds: 0,
 
   invitationText: 'TRÂN TRỌNG BÁO TIN LỄ THÀNH HÔN CỦA',
   invitationParagraph:

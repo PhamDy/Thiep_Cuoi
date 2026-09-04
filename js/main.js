@@ -194,16 +194,31 @@ function renderParty(id, ev) {
       btn.disabled = true;
       if (audio) audio.play().catch(() => {});
       env.classList.add('open');
-      setTimeout(() => intro.classList.add('reveal-curtain'), 550);
+
+      setTimeout(() => intro.classList.add('reveal-curtain'), 220);
+
       setTimeout(() => {
         intro.classList.add('gone');
         document.body.classList.remove('pre-open');
+
         const fallingLayer = $('#petals');
         fallingLayer.classList.add('hearts');
-        $$('.petal', fallingLayer).forEach((petal) => { petal.textContent = '♥'; });
+        $$('.petal', fallingLayer).forEach((petal) => {
+          petal.textContent = '♥';
+        });
+
+        setupAOS();
+      }, 350);
+
+      // Bắt đầu cuộn sớm hơn, không chờ intro biến mất hoàn toàn
+      setTimeout(() => {
         startAutoScroll();
-      }, 1300);
-      setTimeout(() => { intro.style.display = 'none'; }, 2100);
+      }, 250);
+
+      setTimeout(() => {
+        intro.style.display = 'none';
+      }, 1400);
+
     });
   }
 
@@ -798,10 +813,10 @@ shootHearts(4);
             c.classList.add('aos-in');
             const done = () => { c.style.willChange = 'auto'; c.removeEventListener('transitionend', done); };
             c.addEventListener('transitionend', done);           // ...rồi tắt để không giữ layer vĩnh viễn
-          }, i * 140));
+          }, i * 480));
         io.unobserve(en.target);
       });
-    }, { threshold: 0.14 });
+    }, { threshold: 0.10 });
     $$('.card .sec').forEach((sec) => {
       Array.from(sec.children).forEach((c, i) => { if (!isSkip(c)) c.classList.add('aos', c.getAttribute('data-aos') || dirs[i % dirs.length]); });
       io.observe(sec);
@@ -837,6 +852,7 @@ function init() {
     renderCoverInfo();
     startCountdown();
     renderCalendar();
+
     setupMusic();
     setupIntro();
     setupGift();
@@ -844,7 +860,6 @@ function init() {
     setupLightbox();
     setupRsvp();
     setupGuestbook();
-    setupAOS();
     setupPetals();
 
     document.addEventListener('visibilitychange', () =>

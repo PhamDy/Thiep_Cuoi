@@ -85,13 +85,64 @@
           <p data-bind="bride.mother">Bà ...</p>
           <p class="fam-addr" data-bind="bride.address">...</p>
         </div>
-        <p class="cover-nch"><span>Nhà</span><span>Có</span><span>Hỷ</span></p>
+        <p class="cover-nch"><span>Nhà</span><span>Có</span><span>Hỷ</span></p> 
       </div>
+
+    <!-- 2b. GIỚI THIỆU CÔ DÂU & CHÚ RỂ -->
+    <section class="sec couple-intro reveal">
+
+      <h2 class="couple-intro-title">
+        CÔ DÂU<br>
+        &amp;<br>
+        CHÚ RỂ
+      </h2>
+
+      <div class="couple-portraits">
+
+        <!-- CÔ DÂU - bên trái -->
+        <div class="couple-person">
+          <div class="couple-photo">
+            <img
+              src="assets/img/cd.jpg"
+              alt="Cô dâu Huyền Trang"
+              loading="lazy"
+              decoding="async"
+            >
+          </div>
+
+          <p class="couple-role">Cô dâu</p>
+
+          <p class="couple-person-name">
+            Huyền Trang
+          </p>
+        </div>
+
+        <!-- CHÚ RỂ - bên phải -->
+        <div class="couple-person">
+          <div class="couple-photo">
+            <img
+              src="assets/img/cr.jpg"
+              alt="Chú rể Đắc Dy"
+              loading="lazy"
+              decoding="async"
+            >
+          </div>
+
+          <p class="couple-role">Chú rể</p>
+
+          <p class="couple-person-name">
+            Đắc Dy
+          </p>
+        </div>
+
+      </div>
+    </section>
+
       <p class="invite-lead"><span class="hb">♥</span> <span data-bind="invitationText">TRÂN TRỌNG BÁO TIN LỄ THÀNH HÔN CỦA</span></p>
       <h2 class="couple-names">
-        <span data-bind="groom.name">Nguyễn Vinh Quang</span>
+        <span data-bind="groom.name"></span>
         <span class="amp">&amp;</span>
-        <span data-bind="bride.name">Nguyễn Thị Thúy Vân</span>
+        <span data-bind="bride.name"></span>
       </h2>
       <!-- REPLACE: ảnh section lời mời trỏ từ config.photos.invite -->
       <div class="framed-photo" id="invitePhoto"></div>
@@ -103,6 +154,8 @@
       <div class="party-block" id="partyGroom"></div>
       <div class="party-block" id="partyBride"></div>
     </section>
+
+
 
     <!-- 4. NGHI LỄ -->
     <section class="sec ceremony reveal">
