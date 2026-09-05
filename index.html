@@ -128,7 +128,7 @@
             <img
               src="assets/img/cd.jpg"
               alt="Cô dâu Huyền Trang"
-              loading="lazy"
+              loading="eager"
               decoding="async"
               class="zoomable-photo"
             >
@@ -151,7 +151,7 @@
             <img
               src="assets/img/cr.jpg"
               alt="Chú rể Đắc Dy"
-              loading="lazy"
+              loading="eager"
               decoding="async"
               class="zoomable-photo"
             >
@@ -290,14 +290,26 @@
 
     <!-- 10. FOOTER -->
     <footer class="sec footer">
-      <!-- REPLACE: ảnh footer trỏ từ config.photos.footer -->
       <div class="footer-photo" id="footerPhoto"></div>
       <div class="footer-scrim"></div>
+
       <div class="footer-overlay">
-        <p class="footer-names"><span data-bind="groom.shortName">Quang</span> ♥ <span data-bind="bride.shortName">Vân</span></p>
+        <p class="footer-names">
+          <span data-bind="groom.shortName">Dy</span>
+          ♥
+          <span data-bind="bride.shortName">Trang</span>
+        </p>
+
+        <p class="footer-thanks">
+          Cảm ơn bạn đã dành thời gian đến chung vui<br>
+          và chứng kiến khoảnh khắc đặc biệt của chúng mình.
+        </p>
+
         <p class="footer-credit" data-bind="footerCredit">...</p>
       </div>
     </footer>
+
+
   </div>
 
   <!-- SỔ LƯU BÚT NỔI -->
@@ -403,10 +415,33 @@
 
   <!-- LIGHTBOX -->
   <div class="lightbox" id="lightbox" hidden>
-    <button class="lb-close" id="lbClose" aria-label="Đóng">&times;</button>
-    <button class="lb-prev" id="lbPrev" aria-label="Trước">&#10094;</button>
-    <img class="lb-img" id="lbImg" alt="" decoding="async">
-    <button class="lb-next" id="lbNext" aria-label="Sau">&#10095;</button>
+
+    <button class="lb-close" id="lbClose" aria-label="Đóng">
+      &times;
+    </button>
+
+    <button class="lb-prev" id="lbPrev" aria-label="Trước">
+      &#10094;
+    </button>
+
+    <div class="lb-view">
+      <img class="lb-img" id="lbImg" alt="" decoding="async">
+    </div>
+
+    <button class="lb-next" id="lbNext" aria-label="Sau">
+      &#10095;
+    </button>
+
+    <!-- THANH CÔNG CỤ -->
+    <div class="lb-tools">
+      <button id="lbZoomOut" aria-label="Thu nhỏ">−</button>
+      <button id="lbZoomReset" aria-label="Đặt lại zoom">100%</button>
+      <button id="lbZoomIn" aria-label="Phóng to">+</button>
+    </div>
+
+    <!-- THUMBNAIL -->
+    <div class="lb-thumbs" id="lbThumbs"></div>
+
   </div>
 
   <script src="js/config.js"></script>

@@ -213,7 +213,7 @@ function renderParty(id, ev) {
       // Bắt đầu cuộn sớm hơn, không chờ intro biến mất hoàn toàn
       setTimeout(() => {
         startAutoScroll();
-      }, 250);
+      }, 3000);
 
       setTimeout(() => {
         intro.style.display = 'none';
@@ -292,6 +292,12 @@ function renderParty(id, ev) {
     $('#lbPrev').style.display = 'none';
     $('#lbNext').style.display = 'none';
 
+    // Không hiện thumbnail khi xem QR
+    const lbThumbs = $('#lbThumbs');
+    if (lbThumbs) {
+      lbThumbs.style.display = 'none';
+    }
+
     $('#lightbox').hidden = false;
   };
 
@@ -339,80 +345,648 @@ function renderParty(id, ev) {
     startAuto();
   }
 
-  let isQrLightbox = false;
+let isQrLightbox = false;
+let lbIndex = 0;
 
-  let lbIndex = 0;
+function updateLbThumbs() {
+  const lbThumbs = $('#lbThumbs');
+  if (!lbThumbs) return;
 
+  Array.from(lbThumbs.children).forEach((thumb, i) => {
+    thumb.classList.toggle('active', i === lbIndex);
+  });
+}
+
+// ===== LIGHTBOX ZOOM =====
+let lbZoom = 1;
+let lbPanX = 0;
+let lbPanY = 0;
+
+const lbPointers = new Map();
+
+let lbPinchStartDistance = 0;
+let lbPinchStartZoom = 1;
+
+let lbPointerStartX = 0;
+let lbPointerStartY = 0;
+let lbPointerStartPanX = 0;
+let lbPointerStartPanY = 0;
+
+let lbSuppressClickUntil = 0;
+
+
+// Khoảng cách giữa 2 ngón tay
+function getPinchDistance() {
+  const pts = [...lbPointers.values()];
+
+  if (pts.length < 2) return 0;
+
+  return Math.hypot(
+    pts[0].x - pts[1].x,
+    pts[0].y - pts[1].y
+  );
+}
+
+
+// Cập nhật zoom
+function updateLightboxZoom() {
+  lbZoom = Math.max(1, Math.min(4, lbZoom));
+
+  // Zoom về 100% thì đưa ảnh về giữa
+  if (lbZoom === 1) {
+    lbPanX = 0;
+    lbPanY = 0;
+  }
+
+  const img = $('#lbImg');
+
+  img.style.transform =
+    `translate3d(${lbPanX}px, ${lbPanY}px, 0) scale(${lbZoom})`;
+
+  img.style.cursor = lbZoom > 1 ? 'grab' : 'zoom-in';
+
+  if (lbZoom > 1) {
+    img.classList.add('is-zoomed');
+  } else {
+    img.classList.remove('is-zoomed');
+  }
+
+    // Cập nhật % zoom trên nút giữa
+  const zoomReset = $('#lbZoomReset');
+  if (zoomReset) {
+    zoomReset.textContent = `${Math.round(lbZoom * 100)}%`;
+  }
+}
+
+
+// Reset zoom
+function resetLightboxZoom() {
+  lbZoom = 1;
+  lbPanX = 0;
+  lbPanY = 0;
+
+  const img = $('#lbImg');
+
+  img.style.transform = 'translate3d(0,0,0) scale(1)';
+  img.style.cursor = 'zoom-in';
+  img.classList.remove('is-zoomed');
+  img.classList.remove('is-dragging');
+
+  // Reset số %
+  const zoomReset = $('#lbZoomReset');
+  if (zoomReset) {
+    zoomReset.textContent = '100%';
+  }
+
+}
+
+
+// Zoom + / -
+function zoomLightbox(step) {
+  const oldZoom = lbZoom;
+
+  lbZoom = Math.max(
+    1,
+    Math.min(4, lbZoom + step)
+  );
+
+  if (lbZoom !== oldZoom) {
+    updateLightboxZoom();
+  }
+}
+
+
+// Mở lightbox ảnh album
 function openLightbox(i) {
   lbIndex = i;
 
-  // Album → cho phép chuyển ảnh
   isQrLightbox = false;
+
   $('#lbPrev').style.display = '';
   $('#lbNext').style.display = '';
 
-  swapDecoded($('#lbImg'), cfg.gallery[i]);
+  // Album → hiện danh sách ảnh
+  const lbThumbs = $('#lbThumbs');
+  if (lbThumbs) {
+    lbThumbs.style.display = 'flex';
+  }
+
+  resetLightboxZoom();
+
+  swapDecoded(
+    $('#lbImg'),
+    cfg.gallery[i]
+  );
+
+  updateLbThumbs();
+
   $('#lightbox').hidden = false;
 }
 
-  function moveLightbox(step) { lbIndex = (lbIndex + step + cfg.gallery.length) % cfg.gallery.length; swapDecoded($('#lbImg'), cfg.gallery[lbIndex]); }
+
+// Chuyển ảnh trong album
+function moveLightbox(step) {
+  lbIndex =
+    (lbIndex + step + cfg.gallery.length)
+    % cfg.gallery.length;
+
+  resetLightboxZoom();
+
+  swapDecoded(
+    $('#lbImg'),
+    cfg.gallery[lbIndex]
+  );
+
+  updateLbThumbs();
+}
+
+
+// ===== SETUP LIGHTBOX =====
 function setupLightbox() {
 
-    // Phóng to ảnh cô dâu / chú rể
-  $$('.zoomable-photo').forEach((img) => {
-    img.addEventListener('click', () => {
+  const lightbox = $('#lightbox');
+  const img = $('#lbImg');
+
+    // ========================================
+  // THUMBNAIL ẢNH TRONG LIGHTBOX
+  // ========================================
+  const lbThumbs = $('#lbThumbs');
+
+  if (lbThumbs) {
+    lbThumbs.innerHTML = '';
+
+    cfg.gallery.forEach((src, i) => {
+      const thumb = document.createElement('img');
+
+      // Nếu có ảnh thumbnail riêng thì dùng thumbnail
+      thumb.src =
+        (cfg.galleryThumbs && cfg.galleryThumbs[i])
+        || src;
+
+      thumb.alt = `Ảnh ${i + 1}`;
+      thumb.loading = 'lazy';
+      thumb.decoding = 'async';
+
+      thumb.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        if (isQrLightbox) return;
+
+        lbIndex = i;
+        resetLightboxZoom();
+
+        swapDecoded(
+          $('#lbImg'),
+          cfg.gallery[lbIndex]
+        );
+
+        updateLbThumbs();
+      });
+
+      lbThumbs.appendChild(thumb);
+    });
+  }
+
+
+  // ========================================
+  // ẢNH CÔ DÂU / CHÚ RỂ
+  // ========================================
+  $$('.zoomable-photo').forEach((photo) => {
+
+    photo.addEventListener('click', () => {
+
       isQrLightbox = true;
 
       $('#lbPrev').style.display = 'none';
       $('#lbNext').style.display = 'none';
 
-      $('#lbImg').src = img.src;
-      $('#lbImg').alt = img.alt;
+      // Không hiện thumbnail khi xem ảnh cô dâu / chú rể
+      const lbThumbs = $('#lbThumbs');
+      if (lbThumbs) {
+        lbThumbs.style.display = 'none';
+      }
 
-      $('#lightbox').hidden = false;
+      resetLightboxZoom();
+
+      img.src = photo.src;
+      img.alt = photo.alt;
+
+      lightbox.hidden = false;
     });
+
   });
 
-  // Đóng bằng nút X
-  $('#lbClose').addEventListener('click', () => {
-    $('#lightbox').hidden = true;
 
-    // Reset lại nút Previous / Next
+  // ========================================
+  // CLICK + / - BẰNG CHUỘT
+  // ========================================
+
+  // Click ảnh -> zoom
+  img.addEventListener('click', (e) => {
+
+    e.stopPropagation();
+
+    // Không zoom lại sau khi vừa pinch / drag / swipe
+    if (performance.now() < lbSuppressClickUntil) {
+      return;
+    }
+
+    if (lbZoom >= 4) {
+      resetLightboxZoom();
+    } else {
+      zoomLightbox(0.5);
+    }
+
+  });
+
+
+  // ========================================
+  // CHUỘT LĂN -> ZOOM
+  // ========================================
+  img.addEventListener(
+    'wheel',
+    (e) => {
+
+      if (lightbox.hidden) return;
+
+      e.preventDefault();
+
+      if (e.deltaY < 0) {
+        zoomLightbox(0.25);
+      } else {
+        zoomLightbox(-0.25);
+      }
+
+    },
+    { passive: false }
+  );
+
+
+  // ========================================
+  // POINTER DOWN
+  // Hỗ trợ:
+  // - 1 ngón tay
+  // - 2 ngón tay
+  // - chuột
+  // ========================================
+  img.addEventListener('pointerdown', (e) => {
+
+    if (lightbox.hidden) return;
+
+    lbPointers.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY
+    });
+
+    img.setPointerCapture(e.pointerId);
+
+
+    // Có 2 ngón tay -> bắt đầu pinch zoom
+    if (lbPointers.size === 2) {
+
+      lbPinchStartDistance =
+        getPinchDistance();
+
+      lbPinchStartZoom =
+        lbZoom;
+
+      lbSuppressClickUntil =
+        performance.now() + 500;
+
+      img.classList.remove('is-dragging');
+
+      return;
+    }
+
+
+    // Bắt đầu kéo / swipe
+    lbPointerStartX = e.clientX;
+    lbPointerStartY = e.clientY;
+
+    lbPointerStartPanX = lbPanX;
+    lbPointerStartPanY = lbPanY;
+
+  });
+
+
+  // ========================================
+  // POINTER MOVE
+  // ========================================
+  img.addEventListener('pointermove', (e) => {
+
+    if (!lbPointers.has(e.pointerId)) {
+      return;
+    }
+
+    lbPointers.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY
+    });
+
+
+    // ======================================
+    // PINCH ZOOM 2 NGÓN
+    // ======================================
+    if (lbPointers.size === 2) {
+
+      const distance =
+        getPinchDistance();
+
+      if (!lbPinchStartDistance) {
+        return;
+      }
+
+      lbZoom =
+        lbPinchStartZoom *
+        (distance / lbPinchStartDistance);
+
+      lbZoom =
+        Math.max(
+          1,
+          Math.min(4, lbZoom)
+        );
+
+      updateLightboxZoom();
+
+      lbSuppressClickUntil =
+        performance.now() + 500;
+
+      return;
+    }
+
+
+    // ======================================
+    // 1 NGÓN / CHUỘT
+    // ======================================
+    const dx =
+      e.clientX - lbPointerStartX;
+
+    const dy =
+      e.clientY - lbPointerStartY;
+
+
+    // Nếu đang zoom -> kéo ảnh
+    if (lbZoom > 1) {
+
+      lbPanX =
+        lbPointerStartPanX + dx;
+
+      lbPanY =
+        lbPointerStartPanY + dy;
+
+      img.style.transform =
+        `translate3d(${lbPanX}px, ${lbPanY}px, 0) scale(${lbZoom})`;
+
+      img.classList.add('is-dragging');
+
+      if (
+        Math.abs(dx) > 5 ||
+        Math.abs(dy) > 5
+      ) {
+        lbSuppressClickUntil =
+          performance.now() + 500;
+      }
+
+      return;
+    }
+
+
+    // Chưa zoom -> chỉ swipe để đổi ảnh
+    if (
+      Math.abs(dx) > 10 ||
+      Math.abs(dy) > 10
+    ) {
+
+      lbSuppressClickUntil =
+        performance.now() + 500;
+
+    }
+
+  });
+
+
+  // ========================================
+  // POINTER UP
+  // ========================================
+  img.addEventListener('pointerup', (e) => {
+
+    if (!lbPointers.has(e.pointerId)) {
+      return;
+    }
+
+    const dx =
+      e.clientX - lbPointerStartX;
+
+    const dy =
+      e.clientY - lbPointerStartY;
+
+    const wasSingle =
+      lbPointers.size === 1;
+
+
+    lbPointers.delete(e.pointerId);
+
+
+    if (lbPointers.size < 2) {
+      lbPinchStartDistance = 0;
+    }
+
+
+    img.classList.remove('is-dragging');
+
+
+    // ======================================
+    // SWIPE TRÁI / PHẢI
+    // Chỉ khi chưa zoom
+    // ======================================
+    if (
+      wasSingle &&
+      lbZoom === 1 &&
+      Math.abs(dx) > 50 &&
+      Math.abs(dx) > Math.abs(dy)
+    ) {
+
+      if (!isQrLightbox) {
+
+        if (dx < 0) {
+          moveLightbox(1);
+        } else {
+          moveLightbox(-1);
+        }
+
+      }
+
+      lbSuppressClickUntil =
+        performance.now() + 500;
+    }
+
+  });
+
+
+  // ========================================
+  // POINTER CANCEL
+  // ========================================
+  img.addEventListener('pointercancel', (e) => {
+
+    lbPointers.delete(e.pointerId);
+
+    if (lbPointers.size < 2) {
+      lbPinchStartDistance = 0;
+    }
+
+    img.classList.remove('is-dragging');
+
+  });
+
+
+  // ========================================
+  // ĐÓNG
+  // ========================================
+  const closeLightbox = () => {
+
+    lightbox.hidden = true;
+
+    resetLightboxZoom();
+
     $('#lbPrev').style.display = '';
     $('#lbNext').style.display = '';
-  });
 
-  $('#lbPrev').addEventListener('click', () => moveLightbox(-1));
-  $('#lbNext').addEventListener('click', () => moveLightbox(1));
+    lbPointers.clear();
 
-  // Click ra ngoài ảnh để đóng
-  $('#lightbox').addEventListener('click', (e) => {
-    if (e.target.id === 'lightbox') {
-      $('#lightbox').hidden = true;
+  };
 
-      // Reset lại nút Previous / Next
-      $('#lbPrev').style.display = '';
-      $('#lbNext').style.display = '';
+
+  $('#lbClose').addEventListener(
+    'click',
+    closeLightbox
+  );
+
+
+  // Click nền đen -> đóng
+  lightbox.addEventListener('click', (e) => {
+
+    if (e.target === lightbox) {
+      closeLightbox();
     }
+
   });
 
-  // Phím ESC / ← / →
+
+  // ========================================
+  // NÚT TRÁI / PHẢI
+  // ========================================
+  $('#lbPrev').addEventListener(
+    'click',
+    () => {
+
+      if (!isQrLightbox) {
+        moveLightbox(-1);
+      }
+
+    }
+  );
+
+
+  $('#lbNext').addEventListener(
+    'click',
+    () => {
+
+      if (!isQrLightbox) {
+        moveLightbox(1);
+      }
+
+    }
+  );
+
+
+  // ========================================
+  // PHÍM BÀN PHÍM
+  // ========================================
   document.addEventListener('keydown', (e) => {
-    if ($('#lightbox').hidden) return;
 
+    if (lightbox.hidden) return;
+
+
+    // ESC
     if (e.key === 'Escape') {
-      $('#lightbox').hidden = true;
-
-      // Reset lại nút Previous / Next
-      $('#lbPrev').style.display = '';
-      $('#lbNext').style.display = '';
+      closeLightbox();
+      return;
     }
+
 
     if (isQrLightbox) return;
 
-    if (e.key === 'ArrowLeft') moveLightbox(-1);
-    if (e.key === 'ArrowRight') moveLightbox(1);
+
+    // Mũi tên trái / phải
+    if (e.key === 'ArrowLeft') {
+      moveLightbox(-1);
+    }
+
+    if (e.key === 'ArrowRight') {
+      moveLightbox(1);
+    }
+
+
+    // + / =
+    if (e.key === '+' || e.key === '=') {
+      zoomLightbox(0.5);
+    }
+
+
+    // -
+    if (e.key === '-') {
+      zoomLightbox(-0.5);
+    }
+
+
+    // 0 -> reset
+    if (e.key === '0') {
+      resetLightboxZoom();
+    }
+
   });
+
+
+  // ========================================
+  // NÚT ZOOM NẾU HTML CÓ
+  // ========================================
+  const zoomIn = $('#lbZoomIn');
+  const zoomOut = $('#lbZoomOut');
+  const zoomReset = $('#lbZoomReset');
+
+
+  if (zoomIn) {
+    zoomIn.addEventListener(
+      'click',
+      () => zoomLightbox(0.5)
+    );
+  }
+
+
+  if (zoomOut) {
+    zoomOut.addEventListener(
+      'click',
+      () => zoomLightbox(-0.5)
+    );
+  }
+
+
+  if (zoomReset) {
+    zoomReset.addEventListener(
+      'click',
+      resetLightboxZoom
+    );
+  }
+
+
+  // ========================================
+  // Cho phép touch gesture trên ảnh
+  // Không cần sửa CSS
+  // ========================================
+  img.style.touchAction = 'none';
+  img.style.userSelect = 'none';
+  img.style.webkitUserSelect = 'none';
+  img.style.webkitUserDrag = 'none';
 }
 
 function setupRsvp() {
@@ -795,28 +1369,68 @@ shootHearts(4);
   }
 }
 
-  function setupAOS() {
-    const skip = ['cover-photo', 'cover-scrim', 'cover-inborder', 'cd-photo', 'cd-scrim', 'footer-photo', 'footer-scrim'];
-    const dirs = ['aos-up', 'aos-left', 'aos-right', 'aos-up', 'aos-zoom'];
-    const isSkip = (c) => skip.some((s) => c.classList.contains(s));
-    const io = new IntersectionObserver((es) => {
-      es.forEach((en) => {
-        if (!en.isIntersecting) return;
-        Array.from(en.target.children).filter((c) => !isSkip(c) && c.classList.contains('aos'))
-          .forEach((c, i) => setTimeout(() => {
-            c.style.willChange = 'opacity, transform';           // chỉ bật GPU layer ngay trước khi chạy
+function setupAOS() {
+  const skip = [
+    'cover-photo',
+    'cover-scrim',
+    'cover-inborder',
+    'cd-photo',
+    'cd-scrim',
+    'footer-photo',
+    'footer-scrim'
+  ];
+
+  const dirs = [
+    'aos-up',
+    'aos-left',
+    'aos-right',
+    'aos-up',
+    'aos-zoom'
+  ];
+
+  const isSkip = (c) => skip.some((s) => c.classList.contains(s));
+
+  const io = new IntersectionObserver((es) => {
+    es.forEach((en) => {
+      if (!en.isIntersecting) return;
+
+      const sec = en.target;
+
+      Array.from(sec.children)
+        .filter((c) => !isSkip(c) && c.classList.contains('aos'))
+        .forEach((c, i) => {
+          setTimeout(() => {
+            c.style.willChange = 'opacity, transform';
             c.classList.add('aos-in');
-            const done = () => { c.style.willChange = 'auto'; c.removeEventListener('transitionend', done); };
-            c.addEventListener('transitionend', done);           // ...rồi tắt để không giữ layer vĩnh viễn
-          }, i * 480));
-        io.unobserve(en.target);
-      });
-    }, { threshold: 0.10 });
-    $$('.card .sec').forEach((sec) => {
-      Array.from(sec.children).forEach((c, i) => { if (!isSkip(c)) c.classList.add('aos', c.getAttribute('data-aos') || dirs[i % dirs.length]); });
-      io.observe(sec);
+
+            const done = () => {
+              c.style.willChange = 'auto';
+              c.removeEventListener('transitionend', done);
+            };
+
+            c.addEventListener('transitionend', done);
+          }, i * 120);
+        });
+
+      io.unobserve(sec);
     });
-  }
+  }, {
+    threshold: 0.10
+  });
+
+  $$('.card .sec').forEach((sec) => {
+    Array.from(sec.children).forEach((c, i) => {
+      if (!isSkip(c)) {
+        c.classList.add(
+          'aos',
+          c.getAttribute('data-aos') || dirs[i % dirs.length]
+        );
+      }
+    });
+
+    io.observe(sec);
+  });
+}
 
   function fillHearts(wrap, n) {
     for (let i = 0; i < n; i++) {
