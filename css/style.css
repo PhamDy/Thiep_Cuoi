@@ -1272,3 +1272,8 @@ body.tab-hidden .petal { animation-play-state: paused; }
 .zoomable-photo {
   cursor: zoom-in;
 }
+
+.couple-intro-and {
+  display: inline-block;
+  margin: 8px 0;
+}
