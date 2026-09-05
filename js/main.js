@@ -223,8 +223,14 @@ function renderParty(id, ev) {
   }
 
   function startAutoScroll() {
+
+    const isMobile =
+        /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     const secs = cfg.autoScrollSeconds || 60;
+    const mobileSpeed = 85; 
+
     const delay = Math.max(0, (cfg.autoScrollDelaySeconds != null ? cfg.autoScrollDelaySeconds : 0.2) * 1000);
+
     let stopped = false, lastTs = null, armed = false;
     setTimeout(() => { armed = true; }, 600);
     const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
@@ -237,9 +243,15 @@ function renderParty(id, ev) {
       if (stopped) return;
       if (lastTs == null) lastTs = ts;
       const dt = ts - lastTs; lastTs = ts;
-      const target = maxScroll();
-      const speed = target / (secs * 1000);             // px mỗi ms để cuộn hết trang trong ~secs giây
-      const y = Math.min(window.scrollY + speed * dt, target);
+
+    const target = maxScroll();
+
+    const speed = isMobile
+      ? mobileSpeed / 1000
+      : target / (secs * 1000);
+
+    const y = Math.min(window.scrollY + speed * dt, target);
+      
       // instant từng frame (KHÔNG để scroll-behavior:smooth của CSS xen vào, tránh giật/kẹt)
       window.scrollTo({ top: y, behavior: 'auto' });
       if (y < target - 1) requestAnimationFrame(frame); else { endCv(); remove(); }

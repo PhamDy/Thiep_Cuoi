@@ -152,7 +152,7 @@ const WEDDING_CONFIG = {
   },
 
   // REPLACE: dòng credit ở footer
-  footerCredit: 'Thiệp cưới online — thực hiện bởi chú rể',
+  footerCredit: 'Thiệp cưới online — thực hiện bởi Chú rể',
 };
 
 window.WEDDING_CONFIG = WEDDING_CONFIG;
