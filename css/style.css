@@ -777,7 +777,7 @@ html.guest-loading .card {
   width: calc(100% - 74px);
   max-width: 326px;
 
-  margin: -125px auto 0;
+  margin: -60px auto 0;
   padding: 18px 22px 24px;
 
   background: #fff;
@@ -908,7 +908,7 @@ html.guest-loading .card {
     width: calc(100% - 74px);
     max-width: 326px;
 
-    margin-top: -124px;
+    margin-top: -60px;
 
     padding: 17px 20px 23px;
   }
