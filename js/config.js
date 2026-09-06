@@ -32,8 +32,10 @@ const WEDDING_CONFIG = {
   autoScrollDelaySeconds: 0,
 
   invitationText: 'TRÂN TRỌNG BÁO TIN LỄ THÀNH HÔN CỦA',
-  invitationParagraph:
-    'Trong niềm hạnh phúc, chúng mình trân trọng kính mời bạn đến chung vui cùng gia đình trong ngày trọng đại. Sự hiện diện của bạn là niềm vinh hạnh cho chúng mình.',
+
+invitationParagraph:
+  'Chúng mình sắp về chung một nhà.\nHẹn bạn đến chung vui trong ngày hạnh phúc của chúng mình.',
+  
   message: 'Cuộc sống quý giá không chỉ ở đích đến, mà còn ở những khoảnh khắc chia sẻ cùng nhau.',
 
   // REPLACE: câu trích tình yêu (section Love / You)

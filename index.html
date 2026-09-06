@@ -198,7 +198,7 @@
 
     <!-- 5. LỊCH -->
     <section class="sec calendar reveal">
-      <p class="calendar-month" id="calMonth">Tháng 12, 2026</p>
+      <p class="calendar-month" id="calMonth"></p>
       <div class="calendar-card">
         <div class="calendar-weekdays">
           <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
@@ -214,7 +214,7 @@
       <div class="cd-scrim"></div>
       <div class="cd-inner">
         <h2 class="serif-title">INVITATION</h2>
-        <p class="cd-names"><span data-bind="groom.name">Phạm Đắc Dy</span> - <span data-bind="bride.name">Trần Huyền Trang</span></p>
+        <p class="cd-names"><span>Đắc Dy</span> - <span>Huyền Trang</span></p>
         <p class="cd-para" data-bind="invitationParagraph">...</p>
         <div class="countdown-box" id="countdown">
           <div class="cd-unit"><span id="cdDays">0</span><label>Ngày</label></div>
@@ -238,32 +238,80 @@
     </section>
 
     <!-- 7. RSVP -->
-    <section class="sec rsvp reveal">
-      <h2 class="script-title">Xác nhận tham dự</h2>
-      <form id="rsvpForm" class="rsvp-form">
-        <label class="rsvp-lb">Họ và tên</label>
-        <input type="text" name="guestname" placeholder="Nhập tên của bạn" required>
-        <p class="rsvp-q">Bạn sẽ tham dự chứ?</p>
-        <div class="rsvp-col">
-          <label><input type="radio" name="attend" value="yes" checked> Có, tôi sẽ tham dự</label>
-          <label><input type="radio" name="attend" value="no"> Tôi bận, rất tiếc không thể tham dự</label>
-        </div>
-        <p class="rsvp-q">Số lượng người tham dự</p>
-        <select name="guests">
-          <option value="1">1 người</option><option value="2">2 người</option>
-          <option value="3">3 người</option><option value="4">4 người</option>
-          <option value="5">5 người</option><option value="6">6 người</option>
-          <option value="7">7 người</option><option value="8">8 người</option>
-          <option value="9">9 người</option><option value="10">10 người</option>
-        </select>
-        <p class="rsvp-q">Bạn là khách mời của ai?</p>
-        <div class="rsvp-col">
-          <label><input type="radio" name="side" value="groom" checked> Nhà trai</label>
-          <label><input type="radio" name="side" value="bride"> Nhà gái</label>
-        </div>
-        <button type="submit" class="btn-maroon">Gửi xác nhận</button>
-        <p class="rsvp-thanks" id="rsvpThanks" hidden>Cảm ơn bạn đã xác nhận ♥</p>
-      </form>
+    <section class="rsvp reveal">
+
+      <!-- Ảnh RSVP -->
+      <div class="rsvp-photo"></div>
+
+      <!-- Form nổi lên trên ảnh -->
+      <div class="rsvp-card">
+
+        <h2 class="script-title">Xác nhận tham dự</h2>
+
+        <form id="rsvpForm" class="rsvp-form">
+
+          <label class="rsvp-lb">Họ và tên</label>
+          <input
+            type="text"
+            name="guestname"
+            placeholder="Nhập tên của bạn"
+            required
+          >
+
+          <p class="rsvp-q">Bạn sẽ tham dự chứ?</p>
+
+          <div class="rsvp-col">
+            <label>
+              <input type="radio" name="attend" value="yes" checked>
+              Có, tôi sẽ tham dự
+            </label>
+
+            <label>
+              <input type="radio" name="attend" value="no">
+              Tôi bận, rất tiếc không thể tham dự
+            </label>
+          </div>
+
+          <p class="rsvp-q">Số lượng người tham dự</p>
+
+          <select name="guests">
+            <option value="1">1 người</option>
+            <option value="2">2 người</option>
+            <option value="3">3 người</option>
+            <option value="4">4 người</option>
+            <option value="5">5 người</option>
+            <option value="6">6 người</option>
+            <option value="7">7 người</option>
+            <option value="8">8 người</option>
+            <option value="9">9 người</option>
+            <option value="10">10 người</option>
+          </select>
+
+          <p class="rsvp-q">Bạn là khách mời của ai?</p>
+
+          <div class="rsvp-col">
+            <label>
+              <input type="radio" name="side" value="groom" checked>
+              Nhà trai
+            </label>
+
+            <label>
+              <input type="radio" name="side" value="bride">
+              Nhà gái
+            </label>
+          </div>
+
+          <button type="submit" class="btn-maroon">
+            Gửi xác nhận
+          </button>
+
+          <p class="rsvp-thanks" id="rsvpThanks" hidden>
+            Cảm ơn bạn đã xác nhận ♥
+          </p>
+
+        </form>
+      </div>
+
     </section>
 
     <!-- 8. MỪNG CƯỚI -->

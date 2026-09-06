@@ -54,9 +54,18 @@
     // const fab = document.getElementById('fabAvatar');
     // if (fab && cfg.photos.avatar) fab.style.backgroundImage = `url('${cfg.photos.avatar}')`;
   }
+
   function introDate() {
-    const d = weddingDate;
-    $('#introDate').textContent = `${String(d.getDate()).padStart(2, '0')} · ${String(d.getMonth() + 1).padStart(2, '0')} · ${d.getFullYear()}`;
+    const params = new URLSearchParams(window.location.search);
+    const guest = params.get('guest') || '';
+
+    // guest bắt đầu bằng "nt" → ngày 26
+    const day = guest.toLowerCase().startsWith('nt')
+      ? 26
+      : weddingDate.getDate();
+
+    $('#introDate').textContent =
+      `${String(day).padStart(2, '0')} · ${String(weddingDate.getMonth() + 1).padStart(2, '0')} · ${weddingDate.getFullYear()}`;
   }
 
 async function loadGuestName() {
@@ -143,15 +152,41 @@ function renderParty(id, ev) {
   }
 
   function tickCountdown() {
-    let diff = Math.floor((weddingDate - new Date()) / 1000);
-    if (diff <= 0) { $('#countdown').hidden = true; $('#countdownDone').hidden = false; return false; }
-    const d = Math.floor(diff / 86400); diff -= d * 86400;
-    const h = Math.floor(diff / 3600); diff -= h * 3600;
-    const m = Math.floor(diff / 60); const s = diff - m * 60;
-    $('#cdDays').textContent = d; $('#cdHours').textContent = String(h).padStart(2, '0');
-    $('#cdMins').textContent = String(m).padStart(2, '0'); $('#cdSecs').textContent = String(s).padStart(2, '0');
+    const params = new URLSearchParams(window.location.search);
+    const guest = params.get('guest') || '';
+
+    // guest bắt đầu bằng "nt" → countdown tới ngày 26
+    const targetDate = new Date(weddingDate);
+
+    if (guest.toLowerCase().startsWith('nt')) {
+      targetDate.setDate(26);
+    }
+
+    let diff = Math.floor((targetDate - new Date()) / 1000);
+
+    if (diff <= 0) {
+      $('#countdown').hidden = true;
+      $('#countdownDone').hidden = false;
+      return false;
+    }
+
+    const d = Math.floor(diff / 86400);
+    diff -= d * 86400;
+
+    const h = Math.floor(diff / 3600);
+    diff -= h * 3600;
+
+    const m = Math.floor(diff / 60);
+    const s = diff - m * 60;
+
+    $('#cdDays').textContent = d;
+    $('#cdHours').textContent = String(h).padStart(2, '0');
+    $('#cdMins').textContent = String(m).padStart(2, '0');
+    $('#cdSecs').textContent = String(s).padStart(2, '0');
+
     return true;
   }
+  
   function startCountdown() { if (tickCountdown()) { const id = setInterval(() => { if (!tickCountdown()) clearInterval(id); }, 1000); } }
 
   function weddingDaysInMonth(m) {
@@ -166,7 +201,8 @@ function renderParty(id, ev) {
   function renderCalendar() {
     const y = weddingDate.getFullYear(), m = weddingDate.getMonth();
     const wed = weddingDaysInMonth(m);
-    $('#calMonth').textContent = `Tháng ${monthNames[m]}, ${y}`;
+    // $('#calMonth').textContent = `Tháng ${monthNames[m]}, ${y}`;
+    $('#calMonth').textContent = `Tháng ${m + 1}`;
     const grid = $('#calGrid'); grid.innerHTML = '';
     const first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
     for (let i = 0; i < first; i++) grid.appendChild(el('cal-empty', '', 'span'));
@@ -330,7 +366,14 @@ function renderParty(id, ev) {
       img.classList.add('fading');
       clearTimeout(fadeTimer);
       // Giải mã ảnh lớn ngoài main thread trước khi hiện → không giật lúc chuyển ảnh
-      fadeTimer = setTimeout(() => swapDecoded(img, cfg.gallery[carIndex], () => img.classList.remove('fading')), 300);
+      fadeTimer = setTimeout(
+        () => swapDecoded(
+          img,
+          cfg.gallery[carIndex],
+          () => img.classList.remove('fading')
+        ),
+        700
+      );
     };
     const stopAuto = () => { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } };
     const startAuto = () => { stopAuto(); autoTimer = setInterval(() => { if (!document.hidden) show(carIndex + 1); }, 4000); };
