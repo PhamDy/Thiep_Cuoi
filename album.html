@@ -339,6 +339,68 @@
         height: 40px;
       }
     }
+
+    .lb-thumbs {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+
+    width: min(90vw, 700px);
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 5px;
+    overflow-x: auto;
+
+    z-index: 10;
+    scrollbar-width: thin;
+    }
+
+    .lb-thumbs img {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 42px;
+
+    object-fit: cover;
+    border-radius: 4px;
+
+    opacity: .5;
+    cursor: pointer;
+
+    border: 2px solid transparent;
+
+    transition:
+        opacity .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+    }
+
+    .lb-thumbs img:hover {
+    opacity: .85;
+    }
+
+    .lb-thumbs img.active {
+    opacity: 1;
+    border-color: #e6cf94;
+    transform: translateY(-2px);
+    }
+
+    @media (max-width: 600px) {
+    .lb-thumbs {
+        width: 94vw;
+        bottom: 10px;
+        gap: 5px;
+    }
+
+    .lb-thumbs img {
+        flex-basis: 52px;
+        width: 52px;
+        height: 38px;
+    }
+    }
   </style>
 </head>
 
@@ -371,6 +433,8 @@
 
     <img id="lbImage" alt="Ảnh cưới">
 
+    <div class="lb-thumbs" id="lbThumbs"></div>
+
     <button class="lb-next" id="lbNext" aria-label="Ảnh sau">
       &#10095;
     </button>
@@ -385,156 +449,374 @@
        dùng đúng file config của website -->
   <script src="/js/config.js"></script>
 
-  <script>
-    const gallery = window.WEDDING_CONFIG.gallery || [];
-    const galleryThumbs = window.WEDDING_CONFIG.galleryThumbs || [];
+    <script>
 
-    const galleryEl = document.getElementById('albumGallery');
+    /* =========================
+        ALBUM CONFIG
+    ========================= */
 
-    const lightbox = document.getElementById('albumLightbox');
-    const lightboxImg = document.getElementById('lbImage');
-    const counter = document.getElementById('lbCounter');
+    const gallery = [];
+
+    const ALBUM_PATH = 'assets/img/album/';
+    const MAX_ALBUM_IMAGES = 100;
+
+
+    /* =========================
+        LOAD ALL EXISTING IMAGES
+    ========================= */
+
+    async function loadGallery() {
+
+        const checks = [];
+
+        for (let i = 1; i <= MAX_ALBUM_IMAGES; i++) {
+
+        const src = `${ALBUM_PATH}${i}.jpg`;
+
+        checks.push(
+            new Promise((resolve) => {
+
+            const img = new Image();
+
+            img.onload = () => resolve(src);
+
+            img.onerror = () => resolve(null);
+
+            img.src = src;
+
+            })
+        );
+
+        }
+
+        const results = await Promise.all(checks);
+
+        results.forEach((src) => {
+
+        if (src) {
+            gallery.push(src);
+        }
+
+        });
+
+    }
+
+
+    /* =========================
+        DOM
+    ========================= */
+
+    const galleryEl =
+        document.getElementById('albumGallery');
+
+    const lightbox =
+        document.getElementById('albumLightbox');
+
+    const lightboxImg =
+        document.getElementById('lbImage');
+
+    const counter =
+        document.getElementById('lbCounter');
+
+    const thumbs =
+        document.getElementById('lbThumbs');
+
 
     let currentIndex = 0;
 
+
     /* =========================
-       RENDER ALBUM
+        UPDATE THUMBNAILS
     ========================= */
 
-    gallery.forEach((src, index) => {
+    function updateThumbs() {
 
-      const item = document.createElement('div');
-      item.className = 'album-item';
+        Array.from(thumbs.children).forEach(
+        (thumb, index) => {
 
-      const img = document.createElement('img');
+            thumb.classList.toggle(
+            'active',
+            index === currentIndex
+            );
 
-      img.src = galleryThumbs[index] || src;
-      img.alt = `Ảnh cưới ${index + 1}`;
-      img.loading = 'lazy';
-      img.decoding = 'async';
+        }
+        );
 
-      item.appendChild(img);
+    }
 
-      item.addEventListener('click', () => {
-        openAlbum(index);
-      });
-
-      galleryEl.appendChild(item);
-    });
 
     /* =========================
-       OPEN
+        RENDER ALBUM
+    ========================= */
+
+    function renderAlbum() {
+
+        gallery.forEach((src, index) => {
+
+        /* ===== THUMB ===== */
+
+        const thumb =
+            document.createElement('img');
+
+        thumb.src = src;
+
+        thumb.alt =
+            `Ảnh cưới ${index + 1}`;
+
+        thumb.loading = 'lazy';
+
+        thumb.decoding = 'async';
+
+
+        thumb.addEventListener(
+            'click',
+            (e) => {
+
+            e.stopPropagation();
+
+            openAlbum(index);
+
+            }
+        );
+
+
+        thumbs.appendChild(thumb);
+
+
+        /* ===== ALBUM IMAGE ===== */
+
+        const item =
+            document.createElement('div');
+
+        item.className =
+            'album-item';
+
+
+        const img =
+            document.createElement('img');
+
+        img.src = src;
+
+        img.alt =
+            `Ảnh cưới ${index + 1}`;
+
+        img.loading = 'lazy';
+
+        img.decoding = 'async';
+
+
+        item.appendChild(img);
+
+
+        item.addEventListener(
+            'click',
+            () => openAlbum(index)
+        );
+
+
+        galleryEl.appendChild(item);
+
+        });
+
+    }
+
+
+    /* =========================
+        OPEN
     ========================= */
 
     function openAlbum(index) {
 
-      currentIndex = index;
+        currentIndex = index;
 
-      lightbox.hidden = false;
+        lightbox.hidden = false;
 
-      requestAnimationFrame(() => {
+        document.body.style.overflow = 'hidden';
+
         lightboxImg.classList.remove('show');
 
+
         setTimeout(() => {
-          lightboxImg.src = gallery[currentIndex];
-          counter.textContent =
+
+        lightboxImg.src =
+            gallery[currentIndex];
+
+        counter.textContent =
             `${currentIndex + 1} / ${gallery.length}`;
 
-          requestAnimationFrame(() => {
+        updateThumbs();
+
+
+        requestAnimationFrame(() => {
+
             lightboxImg.classList.add('show');
-          });
+
+        });
 
         }, 80);
-      });
 
-      document.body.style.overflow = 'hidden';
     }
 
+
     /* =========================
-       CLOSE
+        CLOSE
     ========================= */
 
     function closeAlbum() {
 
-      lightboxImg.classList.remove('show');
+        lightboxImg.classList.remove('show');
 
-      setTimeout(() => {
+
+        setTimeout(() => {
+
         lightbox.hidden = true;
+
         document.body.style.overflow = '';
-      }, 250);
+
+        }, 250);
+
     }
 
+
     /* =========================
-       NEXT / PREV
+        NEXT / PREV
     ========================= */
 
     function moveAlbum(step) {
 
-      currentIndex =
+        if (!gallery.length) return;
+
+
+        currentIndex =
         (currentIndex + step + gallery.length)
         % gallery.length;
 
-      lightboxImg.classList.remove('show');
 
-      setTimeout(() => {
+        lightboxImg.classList.remove('show');
 
-        lightboxImg.src = gallery[currentIndex];
+
+        setTimeout(() => {
+
+        lightboxImg.src =
+            gallery[currentIndex];
 
         counter.textContent =
-          `${currentIndex + 1} / ${gallery.length}`;
+            `${currentIndex + 1} / ${gallery.length}`;
+
+        updateThumbs();
+
 
         requestAnimationFrame(() => {
-          lightboxImg.classList.add('show');
+
+            lightboxImg.classList.add('show');
+
         });
 
-      }, 160);
+        }, 160);
+
     }
 
+
     /* =========================
-       BUTTON
+        BUTTONS
     ========================= */
 
     document
-      .getElementById('lbClose')
-      .addEventListener('click', closeAlbum);
+        .getElementById('lbClose')
+        .addEventListener(
+        'click',
+        closeAlbum
+        );
+
 
     document
-      .getElementById('lbPrev')
-      .addEventListener('click', () => moveAlbum(-1));
+        .getElementById('lbPrev')
+        .addEventListener(
+        'click',
+        () => moveAlbum(-1)
+        );
+
 
     document
-      .getElementById('lbNext')
-      .addEventListener('click', () => moveAlbum(1));
+        .getElementById('lbNext')
+        .addEventListener(
+        'click',
+        () => moveAlbum(1)
+        );
 
-    /* click nền để đóng */
-    lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) {
-        closeAlbum();
-      }
-    });
 
     /* =========================
-       KEYBOARD
+        CLICK BACKGROUND TO CLOSE
     ========================= */
 
-    document.addEventListener('keydown', (e) => {
+    lightbox.addEventListener(
+        'click',
+        (e) => {
 
-      if (lightbox.hidden) return;
+        if (e.target === lightbox) {
+            closeAlbum();
+        }
 
-      if (e.key === 'Escape') {
-        closeAlbum();
-      }
+        }
+    );
 
-      if (e.key === 'ArrowLeft') {
-        moveAlbum(-1);
-      }
 
-      if (e.key === 'ArrowRight') {
-        moveAlbum(1);
-      }
-    });
+    /* =========================
+        KEYBOARD
+    ========================= */
 
-  </script>
+    document.addEventListener(
+        'keydown',
+        (e) => {
+
+        if (lightbox.hidden) return;
+
+
+        if (e.key === 'Escape') {
+            closeAlbum();
+        }
+
+
+        if (e.key === 'ArrowLeft') {
+            moveAlbum(-1);
+        }
+
+
+        if (e.key === 'ArrowRight') {
+            moveAlbum(1);
+        }
+
+        }
+    );
+
+
+    /* =========================
+        START
+    ========================= */
+
+    async function initAlbum() {
+
+        await loadGallery();
+
+
+        if (!gallery.length) {
+
+        galleryEl.innerHTML =
+            '<p>Chưa có ảnh trong album.</p>';
+
+        return;
+
+        }
+
+
+        renderAlbum();
+
+    }
+
+
+    initAlbum();
+
+    </script>
 
 </body>
 </html>

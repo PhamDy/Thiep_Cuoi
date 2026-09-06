@@ -35,7 +35,7 @@ const WEDDING_CONFIG = {
 
 invitationParagraph:
   'Chúng mình sắp về chung một nhà.\nHẹn bạn đến chung vui trong ngày hạnh phúc của chúng mình.',
-  
+
   message: 'Cuộc sống quý giá không chỉ ở đích đến, mà còn ở những khoảnh khắc chia sẻ cùng nhau.',
 
   // REPLACE: câu trích tình yêu (section Love / You)
@@ -74,15 +74,40 @@ invitationParagraph:
 
   // REPLACE: album ảnh cưới (carousel + thumbnail)
   gallery: [
-    // 'assets/img/ph-g1.svg',
-    // 'assets/img/ph-g2.svg',
-    // 'assets/img/ph-g3.svg',
-    // 'assets/img/ph-g4.svg',
-    'assets/img/6.jpg',
-    'assets/img/7.jpg',
-    'assets/img/8.jpg',
-    'assets/img/9.jpg',
+    // 'assets/img/album/6.jpg',
+    'assets/img/album/17.jpg',
+    'assets/img/album/7.jpg',
+    'assets/img/album/8.jpg',
+    'assets/img/album/9.jpg',
+    // 'assets/img/album/10.jpg',
+    'assets/img/album/11.jpg',
+    // 'assets/img/album/12.jpg',
+    // 'assets/img/album/13.jpg',
+    // 'assets/img/album/14.jpg',
+    // 'assets/img/album/15.jpg',
+    // 'assets/img/album/16.jpg',
+    // 'assets/img/album/18.jpg',
+    // 'assets/img/album/19.jpg',
+    // 'assets/img/album/20.jpg',
   ],
+
+  // gallery: [
+  //   'assets/img/album/test/6.jpg',
+  //   'assets/img/album/test/7.jpg',
+  //   'assets/img/album/test/8.jpg',
+  //   'assets/img/album/test/9.jpg',
+  //   'assets/img/album/test/10.jpg',
+  //   'assets/img/album/test/11.jpg',
+  //   'assets/img/album/test/12.jpg',
+  //   // 'assets/img/album/test/13.jpg',
+  //   // 'assets/img/album/test/14.jpg',
+  //   'assets/img/album/test/15.jpg',
+  //   // 'assets/img/album/test/16.jpg',
+  //   'assets/img/album/test/17.jpg',
+  //   'assets/img/album/test/18.jpg',
+  //   'assets/img/album/test/19.jpg',
+  //   // 'assets/img/album/test/20.jpg',
+  // ],
 
   // Ảnh tem cho dải thumbnail (nhẹ, ~kích thước hiển thị). Ảnh gốc ở `gallery` vẫn dùng
   // full-res cho carousel + lightbox. Phải cùng thứ tự với `gallery`. Bỏ trống → dùng lại `gallery`.

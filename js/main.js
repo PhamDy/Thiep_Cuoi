@@ -516,15 +516,29 @@ function openLightbox(i) {
 
   resetLightboxZoom();
 
-  swapDecoded(
-    $('#lbImg'),
-    cfg.gallery[i]
-  );
+  switchLightboxImage(cfg.gallery[lbIndex]);
 
   updateLbThumbs();
 
   $('#lightbox').hidden = false;
 }
+
+function switchLightboxImage(src) {
+  const img = $('#lbImg');
+
+  img.classList.add('lb-switching');
+
+  swapDecoded(
+    img,
+    src,
+    () => {
+      requestAnimationFrame(() => {
+        img.classList.remove('lb-switching');
+      });
+    }
+  );
+}
+
 
 function switchLightboxImage(src) {
   const img = $('#lbImg');
@@ -551,10 +565,7 @@ function moveLightbox(step) {
 
   resetLightboxZoom();
 
-  swapDecoded(
-    $('#lbImg'),
-    cfg.gallery[lbIndex]
-  );
+  switchLightboxImage(cfg.gallery[lbIndex]);
 
   updateLbThumbs();
 }
@@ -624,10 +635,23 @@ function setupLightbox() {
 
       resetLightboxZoom();
 
+      // Chuẩn bị ảnh
+      img.classList.remove('lb-show');
+      img.classList.add('lb-switching');
+
       img.src = photo.src;
       img.alt = photo.alt;
 
       lightbox.hidden = false;
+
+      // Cho trình duyệt render lightbox trước
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          img.classList.remove('lb-switching');
+          img.classList.add('lb-show');
+        });
+      });
+
     });
 
   });
@@ -918,13 +942,13 @@ function setupLightbox() {
   );
 
 
-  // Click nền đen -> đóng
-  lightbox.addEventListener('click', (e) => {
+  // Click nền đen trong vùng ảnh -> đóng lightbox
+  const lbView = $('#lightbox .lb-view');
 
-    if (e.target === lightbox) {
-      closeLightbox();
-    }
-
+  lbView.addEventListener('click', (e) => {
+      if (e.target === lbView) {
+          closeLightbox();
+      }
   });
 
 
@@ -1465,13 +1489,13 @@ function setupAOS() {
             };
 
             c.addEventListener('transitionend', done);
-          }, i * 120);
+          }, i * 320);
         });
 
       io.unobserve(sec);
     });
   }, {
-    threshold: 0.10
+    threshold: 0.20
   });
 
   $$('.card .sec').forEach((sec) => {

@@ -54,8 +54,10 @@ body:not(.pre-open)::before {
 .aos {
   opacity: 0;
   transition:
-    opacity 1.1s cubic-bezier(.16, 1, .3, 1),
-    transform 1.1s cubic-bezier(.16, 1, .3, 1);
+    /* opacity 1.1s cubic-bezier(.16, 1, .3, 1),
+    transform 1.1s cubic-bezier(.16, 1, .3, 1); */
+    opacity 2s ease,
+    transform 2s ease;
 }
 
 /* Nội dung đi từ dưới lên */
@@ -1529,25 +1531,26 @@ body.pre-open .gb-toggle {
   max-height: 72vh;
 
   border-radius: 6px;
-
   object-fit: contain;
-
-  transform: scale(1);
+  transform: scale(.96);
   transform-origin: center center;
-
   cursor: zoom-in;
   user-select: none;
   -webkit-user-drag: none;
-
   touch-action: none;
 
-  opacity: 1;
+  opacity: 0;
   filter: blur(0);
 
   transition:
-    opacity .38s ease,
-    filter .38s ease,
-    transform .25s ease;
+    opacity .35s ease,
+    transform .35s ease,
+    filter .35s ease;
+}
+
+.lb-img.lb-show {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Hiệu ứng khi chuyển ảnh */
@@ -2384,7 +2387,7 @@ body:not(.pre-open) .cover-side {
 @media (max-width: 600px) {
   .couple-intro .aos,
   .quote-sec .aos {
-    transition-duration: .65s;
+    transition-duration: 2s;
   }
 }
 
