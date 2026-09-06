@@ -1024,6 +1024,54 @@ html.guest-loading .card {
 .thumbs img { flex: 1; min-width: 0; width: 0; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: .55; outline: 2px solid transparent; outline-offset: 1px; transition: opacity .2s, outline-color .2s; }
 .thumbs img.active { opacity: 1; outline-color: #fff; }
 
+/* ===== XEM TẤT CẢ ALBUM ===== */
+
+.album-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  margin-top: 10px;
+  padding: 14px 10px;
+
+  color: #fff;
+  text-decoration: none;
+
+  font-family: var(--serif);
+  font-size: .9rem;
+  letter-spacing: 1px;
+
+  border-top: 1px solid rgba(255,255,255,.18);
+
+  transition: .25s ease;
+}
+
+.album-more span {
+  font-size: 1.1rem;
+  transition: transform .25s ease;
+}
+
+.album-more:hover span {
+  transform: translateX(5px);
+}
+
+.album-more b {
+  font-size: 1.1rem;
+  font-weight: 400;
+
+  transition: transform .25s ease;
+}
+
+.album-more:hover {
+  background: rgba(255,255,255,.08);
+  letter-spacing: 1.5px;
+}
+
+.album-more:hover b {
+  transform: translateX(5px);
+}
+
 /* ===== 10. FOOTER ===== */
 .footer {
   padding: 0;
@@ -1488,13 +1536,24 @@ body.pre-open .gb-toggle {
   transform-origin: center center;
 
   cursor: zoom-in;
-
   user-select: none;
   -webkit-user-drag: none;
 
   touch-action: none;
 
-  transition: transform .25s ease;
+  opacity: 1;
+  filter: blur(0);
+
+  transition:
+    opacity .38s ease,
+    filter .38s ease,
+    transform .25s ease;
+}
+
+/* Hiệu ứng khi chuyển ảnh */
+.lb-img.lb-switching {
+  opacity: 0;
+  filter: blur(3px);
 }
 
 .lb-img.is-zoomed {

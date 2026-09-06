@@ -186,7 +186,7 @@ function renderParty(id, ev) {
 
     return true;
   }
-  
+
   function startCountdown() { if (tickCountdown()) { const id = setInterval(() => { if (!tickCountdown()) clearInterval(id); }, 1000); } }
 
   function weddingDaysInMonth(m) {
@@ -526,6 +526,22 @@ function openLightbox(i) {
   $('#lightbox').hidden = false;
 }
 
+function switchLightboxImage(src) {
+  const img = $('#lbImg');
+
+  img.classList.add('lb-switching');
+
+  swapDecoded(
+    img,
+    src,
+    () => {
+      requestAnimationFrame(() => {
+        img.classList.remove('lb-switching');
+      });
+    }
+  );
+}
+
 
 // Chuyển ảnh trong album
 function moveLightbox(step) {
@@ -578,10 +594,7 @@ function setupLightbox() {
         lbIndex = i;
         resetLightboxZoom();
 
-        swapDecoded(
-          $('#lbImg'),
-          cfg.gallery[lbIndex]
-        );
+        switchLightboxImage(cfg.gallery[lbIndex]);
 
         updateLbThumbs();
       });
