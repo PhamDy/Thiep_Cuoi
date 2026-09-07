@@ -5,11 +5,25 @@
   const resolve = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), cfg);
   const el = (cls, txt, tag = 'p') => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   // Gán src cho <img> sau khi ảnh đã giải mã ngoài main thread → không khựng khi hiện ảnh lớn.
+  // const swapDecoded = (imgEl, src, after) => {
+  //   const set = () => { imgEl.src = src; if (after) after(); };
+  //   const tmp = new Image(); tmp.src = src;
+  //   if (tmp.decode) tmp.decode().then(set).catch(set); else set();
+  // };
+
   const swapDecoded = (imgEl, src, after) => {
-    const set = () => { imgEl.src = src; if (after) after(); };
-    const tmp = new Image(); tmp.src = src;
-    if (tmp.decode) tmp.decode().then(set).catch(set); else set();
-  };
+    if (!imgEl) return;
+
+    imgEl.onload = () => {
+      if (after) after();
+    };
+
+    imgEl.onerror = () => {
+      if (after) after();
+    };
+
+    imgEl.src = src;
+  };  
 
   const monthNames = ['Một', 'Hai', 'Ba', 'Bốn', 'Năm', 'Sáu', 'Bảy', 'Tám', 'Chín', 'Mười', 'Mười Một', 'Mười Hai'];
   const weddingDate = new Date(cfg.weddingDate);
@@ -321,20 +335,39 @@ function renderParty(id, ev) {
   const qr = document.getElementById(id);
 
   const enlarge = () => {
-    $('#lbImg').src = qr.src;
+    const lbImg = $('#lbImg');
 
-    // QR chỉ xem ảnh, không cho chuyển ảnh
     isQrLightbox = true;
+
     $('#lbPrev').style.display = 'none';
     $('#lbNext').style.display = 'none';
 
-    // Không hiện thumbnail khi xem QR
     const lbThumbs = $('#lbThumbs');
     if (lbThumbs) {
       lbThumbs.style.display = 'none';
     }
 
+    resetLightboxZoom();
+
+    lbImg.classList.remove('lb-show');
+    lbImg.classList.add('lb-switching');
+
+    lbImg.alt = qr.alt;
+
+    // Mở lightbox trước
     $('#lightbox').hidden = false;
+
+    // Sau đó mới load ảnh QR
+    swapDecoded(
+      lbImg,
+      qr.src,
+      () => {
+        requestAnimationFrame(() => {
+          lbImg.classList.remove('lb-switching');
+          lbImg.classList.add('lb-show');
+        });
+      }
+    );
   };
 
   qr.addEventListener('click', enlarge);
@@ -522,23 +555,6 @@ function openLightbox(i) {
 
   $('#lightbox').hidden = false;
 }
-
-function switchLightboxImage(src) {
-  const img = $('#lbImg');
-
-  img.classList.add('lb-switching');
-
-  swapDecoded(
-    img,
-    src,
-    () => {
-      requestAnimationFrame(() => {
-        img.classList.remove('lb-switching');
-      });
-    }
-  );
-}
-
 
 function switchLightboxImage(src) {
   const img = $('#lbImg');
